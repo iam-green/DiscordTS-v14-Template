@@ -12,7 +12,10 @@
     "fix": "npm run fix:lint && npm run fix:format",
     "fix:format": "npm run fix:prettier",
     "fix:prettier": "prettier --write \"src/**/*.ts\"",
-    "fix:lint": "eslint \"src/**/*.ts\" --fix"
+    "fix:lint": "eslint \"src/**/*.ts\" --fix",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit push",
+    "studio": "drizzle-kit studio"
   },
   "author": "Past2l",
   "license": "ISC",
