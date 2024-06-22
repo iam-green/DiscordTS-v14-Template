@@ -3,8 +3,8 @@ import { Log } from '../module';
 
 export const shard = new ShardingManager(
   process.argv[1].endsWith('.js')
-    ? './dist/discord/client_start.js'
-    : './src/discord/client_start.ts',
+    ? './dist/discord/start.js'
+    : './src/discord/start.ts',
   {
     token: process.env.BOT_TOKEN,
     totalShards: 'auto',

@@ -1,11 +1,11 @@
 import { shard } from '.';
 import { Log } from '../module';
-import { client } from './client_start';
+import { client } from './start';
 
 export * from './client';
 export * from './command';
 export * from './event';
-export * from './client_start';
+export * from './start';
 export * from './shard';
 
 export const discordInit = async () => {
