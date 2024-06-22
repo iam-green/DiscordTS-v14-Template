@@ -1,5 +1,6 @@
 import { shard } from '.';
 import { Log } from '../module';
+import { KoreanBots } from '../module/koreanbots';
 import { client } from './start';
 
 export * from './client';
@@ -10,5 +11,7 @@ export * from './shard';
 
 export const discordInit = async () => {
   await shard.spawn();
-  Log.info(`Logged in as \x1b[33m${client.user?.tag}\x1b[0m!`);
+  Log.info(`Logged in as ${client.user?.tag.green}!`);
+  await KoreanBots.update();
+  setInterval(async () => await KoreanBots.update(), 1000 * 60 * 60);
 };
