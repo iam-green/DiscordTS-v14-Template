@@ -2,7 +2,7 @@ import { ShardingManager } from 'discord.js';
 import { Log } from '../module';
 
 export const shard = new ShardingManager(
-  process.env.RUN_MODE == 'start'
+  process.argv[1].endsWith('.js')
     ? './dist/discord/client_start.js'
     : './src/discord/client_start.ts',
   {
