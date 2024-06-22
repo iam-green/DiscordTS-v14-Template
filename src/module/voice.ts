@@ -42,11 +42,9 @@ export class Voice {
     const voice = this.findInfo(guild?.id);
     if (!voice) return;
     if (!voice.player) voice.player = createAudioPlayer();
-    voice.player?.setMaxListeners(0);
     voice.queue.push(option);
     if (voice.queue.length == 1) {
       voice.player.play(createAudioResource(voice.queue[0].url));
-      voice.connection.setMaxListeners(0);
       voice.connection.subscribe(voice.player);
       voice.connection.on(VoiceConnectionStatus.Disconnected, async () =>
         this.quit(guild),
