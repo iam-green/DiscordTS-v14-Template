@@ -22,10 +22,8 @@ export class ExtendedClient extends Client {
   }
 
   async start() {
-    if (this.shardId != undefined) {
-      await this.registerModules();
-      await this.login(process.env.BOT_TOKEN);
-    }
+    if (this.shardId != undefined) await this.registerModules();
+    await this.login(process.env.BOT_TOKEN);
   }
 
   async registerModules() {
