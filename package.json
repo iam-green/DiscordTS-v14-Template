@@ -1,0 +1,38 @@
+{
+  "name": "typescript_template",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc -p .",
+    "dev": "ts-node ./src/index.ts",
+    "nodemon": "nodemon --watch \"src/**/*.ts\" -e js,jsx,ts,tsx,css,ejs,html,json --exec \"ts-node\" ./src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "fix": "npm run fix:lint && npm run fix:format",
+    "fix:format": "npm run fix:prettier",
+    "fix:prettier": "prettier --write \"src/**/*.ts\"",
+    "fix:lint": "eslint \"src/**/*.ts\" --fix"
+  },
+  "author": "Past2l",
+  "license": "ISC",
+  "dependencies": {
+    "colors": "^1.4.0",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.31.2",
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.6",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
+    "drizzle-kit": "^0.22.7",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "nodemon": "^3.1.4",
+    "prettier": "^3.3.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.2"
+  }
+}
