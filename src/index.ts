@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import 'colors';
 import { databaseInit } from './database';
 import { discordInit } from './discord';
 

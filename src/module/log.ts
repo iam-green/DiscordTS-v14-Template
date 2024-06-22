@@ -1,5 +1,3 @@
-import 'colors';
-
 export class Log {
   static _date() {
     const date = new Date();

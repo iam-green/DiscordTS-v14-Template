@@ -2,7 +2,6 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Log } from '../module';
 import { Client } from 'pg';
 import * as schema from '../database/schema';
-import 'dotenv/config';
 
 const queryClient = new Client(process.env.DATABASE_URL || '');
 
