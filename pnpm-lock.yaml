@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@discordjs/voice':
+        specifier: ^0.17.0
+        version: 0.17.0
       colors:
         specifier: ^1.4.0
         version: 1.4.0
@@ -89,6 +92,10 @@ packages:
 
   '@discordjs/util@1.1.0':
     resolution: {integrity: sha512-IndcI5hzlNZ7GS96RV3Xw1R2kaDuXEp7tRIy/KlhidpN/BQ1qh1NZt3377dMLTa44xDUNKT7hnXkA/oUAzD/lg==}
+    engines: {node: '>=16.11.0'}
+
+  '@discordjs/voice@0.17.0':
+    resolution: {integrity: sha512-hArn9FF5ZYi1IkxdJEVnJi+OxlwLV0NJYWpKXsmNOojtGtAZHxmsELA+MZlu2KW1F/K1/nt7lFOfcMXNYweq9w==}
     engines: {node: '>=16.11.0'}
 
   '@discordjs/ws@1.1.1':
@@ -1195,6 +1202,23 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
+  prism-media@1.3.5:
+    resolution: {integrity: sha512-IQdl0Q01m4LrkN1EGIE9lphov5Hy7WWlH6ulf5QdGePLlPas9p2mhgddTEHrlaXYjjFToM1/rWuwF37VF4taaA==}
+    peerDependencies:
+      '@discordjs/opus': '>=0.8.0 <1.0.0'
+      ffmpeg-static: ^5.0.2 || ^4.2.7 || ^3.0.0 || ^2.4.0
+      node-opus: ^0.3.3
+      opusscript: ^0.0.8
+    peerDependenciesMeta:
+      '@discordjs/opus':
+        optional: true
+      ffmpeg-static:
+        optional: true
+      node-opus:
+        optional: true
+      opusscript:
+        optional: true
+
   pstree.remy@1.1.8:
     resolution: {integrity: sha512-77DZwxQmxKnu3aR542U+X8FypNzbfJ+C5XQDk3uWjWxn6151aIMGthWYRXTqT1E5oJvg+ljaa2OJi+VfvCOQ8w==}
 
@@ -1446,6 +1470,21 @@ snapshots:
       undici: 6.13.0
 
   '@discordjs/util@1.1.0': {}
+
+  '@discordjs/voice@0.17.0':
+    dependencies:
+      '@types/ws': 8.5.10
+      discord-api-types: 0.37.83
+      prism-media: 1.3.5
+      tslib: 2.6.3
+      ws: 8.17.1
+    transitivePeerDependencies:
+      - '@discordjs/opus'
+      - bufferutil
+      - ffmpeg-static
+      - node-opus
+      - opusscript
+      - utf-8-validate
 
   '@discordjs/ws@1.1.1':
     dependencies:
@@ -2420,6 +2459,8 @@ snapshots:
       fast-diff: 1.3.0
 
   prettier@3.3.2: {}
+
+  prism-media@1.3.5: {}
 
   pstree.remy@1.1.8: {}
 
