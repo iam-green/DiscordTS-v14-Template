@@ -6,7 +6,7 @@ export class KoreanBots {
   static async update() {
     if (!process.env.KOREANBOTS_TOKEN) return;
     const bot = new Koreanbots({
-      api: { token: process.env.BOT_TOKEN! },
+      api: { token: process.env.KOREANBOTS_TOKEN! },
       clientID: client.application!.id,
     });
     Log.debug('KoreanBots information has been successfully updated.');
