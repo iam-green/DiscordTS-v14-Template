@@ -22,7 +22,7 @@ export class ExtendedClient extends Client {
   }
 
   async start() {
-    if (this.shardId != undefined) await this.registerModules();
+    await this.registerModules();
     await this.login(process.env.BOT_TOKEN);
   }
 
@@ -56,9 +56,10 @@ export class ExtendedClient extends Client {
       if (!command.command) return;
       for (const name of command.name) {
         this.commands.set(name, { ...command, _name: name });
-        Log.debug(
-          `Added ${name.green} from Shard ${`#${this.shardId}`.green} Command (Location : ${path.yellow})`,
-        );
+        if (this.shardId != undefined)
+          Log.debug(
+            `Added ${name.green} from Shard ${`#${this.shardId}`.green} Command (Location : ${path.yellow})`,
+          );
       }
     }
   }
@@ -90,7 +91,8 @@ export class ExtendedClient extends Client {
       });
     });
     for (const id of this.guildCommands.keys()) {
-      Log.info(`Registering Commands to ${id.green}`);
+      if (this.shardId != undefined)
+        Log.debug(`Registering Commands to ${id.green}`);
       await this.rest.put(
         Routes.applicationGuildCommands(this.application.id, id),
         { body: this.guildCommands.get(id) },
@@ -111,9 +113,10 @@ export class ExtendedClient extends Client {
     );
     for (const path of events) {
       const event: ExtendedEvent<any> = await this.importFile(path);
-      Log.debug(
-        `Added ${event.event.green} from Shard ${`#${this.shardId}`.green} Event (Location : ${path.yellow})`,
-      );
+      if (this.shardId != undefined)
+        Log.debug(
+          `Added ${event.event.green} from Shard ${`#${this.shardId}`.green} Event (Location : ${path.yellow})`,
+        );
       this.on(event.event, event.run);
     }
   }
