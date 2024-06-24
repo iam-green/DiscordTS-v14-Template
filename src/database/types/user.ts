@@ -25,5 +25,4 @@ export const FindUserValidate = UserValidate.omit({})
 export type UserDto = z.infer<typeof UserValidate>;
 export type CreateUserDto = z.infer<typeof CreateUserValidate>;
 export type UpdateUserDto = z.infer<typeof UpdateUserValidate>;
-
 export type FindUserDto = z.infer<typeof FindUserValidate>;
