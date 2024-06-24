@@ -2,21 +2,22 @@ import { and, asc, between, desc, eq } from 'drizzle-orm';
 import { db } from '..';
 import { user } from '../schema';
 import {
-  User,
-  UserDto,
-  UserValidate,
-  FindOptionDto,
-  FindOptionValidate,
+  FindUserDto,
+  FindUserValidate,
+  CreateUserDto,
+  CreateUserValidate,
+  UpdateUserDto,
+  UpdateUserValidate,
 } from '../types';
 
 export class UserService {
-  static async find(data: Partial<User>, option?: Partial<FindOptionDto>) {
-    const { id } = data;
-    const { sort, page, count, from, to } = FindOptionValidate.parse(option);
+  static async find(data: FindUserDto) {
+    const { id, created, sort, page, count, from, to } =
+      FindUserValidate.parse(data);
     return await db.query.user.findMany({
       where: and(
         id ? eq(user.id, id) : undefined,
-        between(user.created, from, to),
+        created ? eq(user.created, created) : between(user.created, from, to),
       ),
       orderBy: sort == 'asc' ? [asc(user.created)] : [desc(user.created)],
       offset: (page - 1) * count,
@@ -30,18 +31,18 @@ export class UserService {
     });
   }
 
-  static async create(data: UserDto) {
+  static async create(data: CreateUserDto) {
     await db.insert(user).values({
-      ...(await UserValidate.parseAsync(data)),
+      ...(await CreateUserValidate.parseAsync(data)),
       created: new Date(),
     });
     return this.get(data.id);
   }
 
-  static async update(id: string, data: Partial<User>) {
+  static async update(id: string, data: UpdateUserDto) {
     await db
       .update(user)
-      .set(UserValidate.omit({ id: true }).partial().parse(data))
+      .set(UpdateUserValidate.parse(data))
       .where(eq(user.id, id));
     return this.get(id);
   }
