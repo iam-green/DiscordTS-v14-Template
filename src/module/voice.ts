@@ -38,7 +38,7 @@ export class Voice {
       adding: false,
     });
     Log.debug(
-      `Bot ${'joined'.green} voice channel in guild '${guild?.id.cyan}.`,
+      `Bot ${'joined'.green} voice channel in guild ${guild?.id.cyan}.`,
     );
   }
 
@@ -48,7 +48,7 @@ export class Voice {
     if (!voice.player) voice.player = createAudioPlayer();
     voice.queue.push(option);
     Log.debug(
-      `${'Added'.green} '${guild?.id.cyan}' guild voice queue | Current Queue Size: ${voice.queue.length.toString().green}`,
+      `${'Added'.green} ${guild?.id.cyan} guild voice queue | Current Queue Size: ${voice.queue.length.toString().green}`,
     );
     if (voice.queue.length == 1) {
       voice.player.play(createAudioResource(voice.queue[0].url));
@@ -62,7 +62,7 @@ export class Voice {
           await (() => new Promise((resolve) => setTimeout(resolve)))();
           voice.queue.shift();
           Log.debug(
-            `${'Removed'.red} '${guild?.id.cyan}' guild voice queue | Current Queue Size: ${voice.queue.length.toString().green}`,
+            `${'Removed'.red} ${guild?.id.cyan} guild voice queue | Current Queue Size: ${voice.queue.length.toString().green}`,
           );
           voice.queue.sort((a, b) => +a.date - +b.date);
           if (voice.queue.length > 0)
@@ -79,7 +79,7 @@ export class Voice {
     voice.player?.stop();
     voice.queue = [];
     Log.debug(
-      `Bot stopped playing voice on voice channel in guild '${guild?.id.cyan}.`,
+      `Bot stopped playing voice on voice channel in guild ${guild?.id.cyan}.`,
     );
   }
 
@@ -88,6 +88,6 @@ export class Voice {
     if (!voice) return;
     voice.connection.destroy();
     this.removeInfo(guild?.id);
-    Log.debug(`Bot ${'left'.red} voice channel in guild '${guild?.id.cyan}.`);
+    Log.debug(`Bot ${'left'.red} voice channel in guild ${guild?.id.cyan}.`);
   }
 }
