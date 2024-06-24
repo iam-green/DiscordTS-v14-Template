@@ -12,5 +12,5 @@ export const discordInit = async () => {
   await shard.spawn();
   Log.info(`Logged in as ${client.user?.tag.green}!`);
   await KoreanBots.update();
-  setInterval(async () => await KoreanBots.update(), 1000 * 60 * 60);
+  setInterval(async () => await KoreanBots.update(), 1000 * 60 * 10);
 };
