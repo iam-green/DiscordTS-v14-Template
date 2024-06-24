@@ -1,6 +1,5 @@
 import { shard } from '.';
-import { Log } from '../module';
-import { KoreanBots } from '../module/koreanbots';
+import { Log, KoreanBots } from '../module';
 import { client } from './start';
 
 export * from './client';
