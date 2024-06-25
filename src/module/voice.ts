@@ -46,12 +46,14 @@ export class Voice {
     const voice = this.findInfo(guild?.id);
     if (!voice) return;
     if (!voice.player) voice.player = createAudioPlayer();
+    (voice.player as any).setMaxListeners(0);
     voice.queue.push(option);
     Log.debug(
       `${'Added'.green} ${guild?.id.cyan} guild voice queue | Current Queue Size: ${voice.queue.length.toString().green}`,
     );
     if (voice.queue.length == 1) {
       voice.player.play(createAudioResource(voice.queue[0].url));
+      (voice.connection as any).setMaxListeners(0);
       voice.connection.subscribe(voice.player);
       voice.connection.on(VoiceConnectionStatus.Disconnected, async () =>
         this.quit(guild),
