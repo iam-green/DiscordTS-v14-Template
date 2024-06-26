@@ -35,7 +35,7 @@ export class Log {
         [
           `${error.name} - ${error.message}`,
           `File : ${file || error.fileName}`,
-          `Stack : ${error.stack.split('\n', '\n\t')}`,
+          `Stack : ${error.stack.replace('\n', '\n\t')}`,
         ].join('\n\t').red
       }`,
     );
