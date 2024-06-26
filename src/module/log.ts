@@ -29,9 +29,15 @@ export class Log {
     );
   }
 
-  static error(content: string) {
+  static error(error, file?: string) {
     console.log(
-      `${'['.cyan}${'ERROR'.red}${']'.cyan} ${'('.cyan}${this._date().yellow}${')'.cyan} ${content.red}`,
+      `${'['.cyan}${'ERROR'.red}${']'.cyan} ${'('.cyan}${this._date().yellow}${')'.cyan} ${
+        [
+          `${error.name} - ${error.message}`,
+          `File : ${file || error.fileName}`,
+          `Stack : ${error.stack.split('\n', '\n\t')}`,
+        ].join('\n\t').red
+      }`,
     );
   }
 }
