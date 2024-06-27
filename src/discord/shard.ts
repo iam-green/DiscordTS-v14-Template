@@ -1,15 +1,15 @@
 import { ShardingManager } from 'discord.js';
 import { Log } from '../module';
+import 'dotenv/config';
+import 'colors';
 
 export const shard = new ShardingManager(
-  process.argv[1].endsWith('.js')
-    ? './dist/discord/start.js'
-    : './src/discord/start.ts',
+  `${__dirname}/start.${process.argv[1].endsWith('.js') ? 'js' : 'ts'}`,
   {
     token: process.env.BOT_TOKEN,
     totalShards: 'auto',
     respawn: true,
-    ...(process.env.RUN_MODE != 'start' && {
+    ...(process.argv[1].endsWith('.ts') && {
       execArgv: ['-r', 'ts-node/register'],
     }),
   },
@@ -26,3 +26,9 @@ shard.on('shardCreate', (shard) => {
   );
   shard.on('death', () => Log.info(`Shard ${`#${shard.id}`.green} Died.`));
 });
+
+export class Shard {
+  static async spawn() {
+    return await shard.spawn({ timeout: -1 });
+  }
+}

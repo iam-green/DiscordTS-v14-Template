@@ -1,16 +1,14 @@
-import { shard } from '.';
-import { Log, KoreanBots } from '../module';
-import { client } from './start';
+import { KoreanBots } from '../module';
+import { Command } from './command';
+import { Shard, shard } from './shard';
 
 export * from './client';
 export * from './command';
 export * from './event';
-export * from './start';
-export * from './shard';
 
 export const discordInit = async () => {
-  await shard.spawn();
-  Log.info(`Logged in as ${client.user?.tag.green}!`);
-  await KoreanBots.update();
-  setInterval(async () => await KoreanBots.update(), 1000 * 60 * 10);
+  await Command.registerCommands();
+  await Shard.spawn();
+  await KoreanBots.update(shard);
+  setInterval(async () => KoreanBots.update(shard), 1000 * 60 * 10);
 };

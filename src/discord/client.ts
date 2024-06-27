@@ -3,121 +3,81 @@ import {
   ClientOptions,
   CommandInteractionOptionResolver,
   Events,
-  Routes,
-  SlashCommandBuilder,
 } from 'discord.js';
-import { CommandType, ExtendedEvent, ExtendedInteraction } from '.';
+import { Command, CommandType, ExtendedInteraction } from '.';
 import { Log } from '../module/log';
-import { glob } from 'glob';
-import 'colors';
+import { Event, ExtendedEvent } from './event';
+
+export const getClientID = async () =>
+  (
+    await (
+      await fetch('https://discordapp.com/api/oauth2/applications/@me', {
+        headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
+      })
+    ).json()
+  ).id as string;
 
 export class ExtendedClient extends Client {
-  commands: Map<string, CommandType> = new Map();
-  guildCommands: Map<string, object[]> = new Map();
-  shardId: number | undefined;
+  events: {
+    path: string;
+    event: ExtendedEvent<any>;
+  }[];
+  commands: { path: string; command: CommandType }[];
+  runMode: string;
 
   constructor(option: ClientOptions) {
     super(option);
-    this.shardId = this.shard?.ids[0];
+    this.runMode = this.shard
+      ? `Shard ${`#${this.shard.ids[0]}`.green}`
+      : 'Main';
+    (async () => {
+      this.events = await Event.getEvents();
+      this.commands = await Command.getCommands();
+    })();
   }
 
   async start() {
     await this.registerModules();
     await this.login(process.env.BOT_TOKEN);
+    Log.info(
+      `${'['.cyan}${this.runMode}${']'.cyan} Logged in as ${this.user?.tag.green}!`,
+    );
   }
 
   async registerModules() {
-    await this.addEvents();
+    await Command.registerCommands();
+    await Command.registerGuildCommands(this.guilds.cache.map((v) => v));
     await this.addCommands();
-    this.on(Events.InteractionCreate, (interaction) => {
-      if (interaction.isCommand()) {
-        const command = this.commands.get(interaction.commandName);
-        if (command)
-          command.run({
-            args: interaction.options as CommandInteractionOptionResolver,
-            client: this,
-            interaction: interaction as ExtendedInteraction,
-          });
-      }
-    });
-    this.on(Events.ClientReady, async () => await this.registerCommands());
-  }
-
-  async importFile(path: string) {
-    return (await import(path))?.default;
+    await this.addEvents();
   }
 
   async addCommands() {
-    const commandList = glob.sync(
-      `${__dirname.replace(/\\/g, '/')}/../command/**/*{.ts,.js}`,
-    );
-    for (const path of commandList) {
-      const command: CommandType = await this.importFile(path);
-      if (!command.command) return;
-      for (const name of command.name) {
-        this.commands.set(name, { ...command, _name: name });
-        if (this.shardId != undefined)
-          Log.debug(
-            `Added ${name.green} from Shard ${`#${this.shardId}`.green} Command (Location : ${path.yellow})`,
-          );
-      }
-    }
-  }
-
-  async registerCommands() {
-    if (!process.env.BOT_TOKEN) throw new Error('No Token Provided');
-    if (!this.application) throw new Error('No Application Provided');
-    this.rest.setToken(process.env.BOT_TOKEN);
-    const commandList = Array.from(this.commands.values());
-    const guilds = Array.from(this.guilds.cache.values());
-    for (const guild of guilds) {
-      const fetch = await guild.commands.fetch();
-      if (fetch.size > 0)
-        await this.rest.put(
-          Routes.applicationGuildCommands(
-            this.application.id,
-            guild.id.toString(),
-          ),
-          { body: [] },
+    for (const command of this.commands) {
+      for (const name of command.command.name)
+        Log.debug(
+          `${'['.cyan}${this.runMode}${']'.cyan} Added ${name.green} Command (Location : ${command.path.yellow})`,
         );
     }
-    commandList.map((v) => {
-      v.guildId?.forEach((id) => {
-        if (!this.guildCommands.get(id)) this.guildCommands.set(id, []);
-        for (const name of v.name) {
-          const slashCommand = new SlashCommandBuilder().setName(name);
-          this.guildCommands.get(id)?.push(v.command(slashCommand).toJSON());
-        }
-      });
-    });
-    for (const id of this.guildCommands.keys()) {
-      if (this.shardId != undefined)
-        Log.debug(`Registering Commands to ${id.green}`);
-      await this.rest.put(
-        Routes.applicationGuildCommands(this.application.id, id),
-        { body: this.guildCommands.get(id) },
-      );
-    }
-    await this.rest.put(Routes.applicationCommands(this.application.id), {
-      body: commandList
-        .filter((v) => !v.guildId || v.guildId.length < 1)
-        .map((v) =>
-          v.command(new SlashCommandBuilder().setName(v._name || '')).toJSON(),
-        ),
+    this.on(Events.InteractionCreate, (interaction) => {
+      if (!interaction.isCommand()) return;
+      const command = this.commands.find((v) =>
+        v.command.name.includes(interaction.commandName),
+      )?.command;
+      if (command)
+        command.run({
+          args: interaction.options as CommandInteractionOptionResolver,
+          client: this.shard!.client,
+          interaction: interaction as ExtendedInteraction,
+        });
     });
   }
 
   async addEvents() {
-    const events = glob.sync(
-      `${__dirname.replace(/\\/g, '/')}/../event/**/*{.ts,.js}`,
-    );
-    for (const path of events) {
-      const event: ExtendedEvent<any> = await this.importFile(path);
-      if (this.shardId != undefined)
-        Log.debug(
-          `Added ${event.event.green} from Shard ${`#${this.shardId}`.green} Event (Location : ${path.yellow})`,
-        );
-      this.on(event.event, event.run);
+    for (const event of this.events) {
+      Log.debug(
+        `${'['.cyan}${this.runMode}${']'.cyan} Added ${event.event.event.green} Event (Location : ${event.path.yellow})`,
+      );
+      this.on(event.event.event, event.event.run);
     }
   }
 }

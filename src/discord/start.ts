@@ -1,7 +1,8 @@
 import { GatewayIntentBits } from 'discord.js';
 import { ExtendedClient } from './client';
+import { databaseInit } from '../database';
 
-export const client = new ExtendedClient({
+const client = new ExtendedClient({
   intents: [
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.Guilds,
@@ -11,5 +12,6 @@ export const client = new ExtendedClient({
 });
 
 (async () => {
+  await databaseInit();
   await client.start();
 })();
