@@ -132,6 +132,8 @@ export class Command {
         this.commandToJson(commands.map((v) => v.command)),
       ).map((v) => v.toJSON()),
     });
+
+    return commands;
   }
 
   static async registerGuildCommands() {
@@ -163,5 +165,7 @@ export class Command {
           body: value.map((v) => v.toJSON()),
         },
       );
+
+    return commands;
   }
 }

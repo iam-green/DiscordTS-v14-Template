@@ -44,12 +44,6 @@ export class ExtendedClient extends Client {
 
   async addCommands() {
     const commands = await Command.getCommands();
-    for (const command of commands) {
-      for (const name of command.command.name)
-        Log.debug(
-          `${'['.cyan}${this.runMode}${']'.cyan} Added ${name.green} Command (Location : ${command.path.yellow})`,
-        );
-    }
     this.on(Events.InteractionCreate, (interaction) => {
       if (
         interaction.type != InteractionType.ApplicationCommand ||
@@ -76,11 +70,7 @@ export class ExtendedClient extends Client {
   }
 
   async addEvents() {
-    for (const event of await Event.getEvents()) {
-      Log.debug(
-        `${'['.cyan}${this.runMode}${']'.cyan} Added ${event.event.event.green} Event (Location : ${event.path.yellow})`,
-      );
+    for (const event of await Event.getEvents())
       this.on(event.event.event, event.event.run);
-    }
   }
 }
