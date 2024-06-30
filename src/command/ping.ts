@@ -5,7 +5,8 @@ export default new ExtendedCommand({
   name: ['ping', '핑'],
   command: (builder) => builder.setDescription('replies with pong'),
   run: async ({ interaction }) => {
-    if (!interaction.isCommand()) return;
+    if (!interaction.guild) return;
+
     await interaction.reply({
       embeds: [
         new EmbedBuilder()

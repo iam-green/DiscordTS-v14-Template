@@ -8,6 +8,7 @@ export * from './event';
 
 export const discordInit = async () => {
   await Command.registerCommands();
+  await Command.registerGuildCommands();
   await Shard.spawn();
   setInterval(async () => KoreanBots.update(shard), 1000 * 60 * 10);
 };

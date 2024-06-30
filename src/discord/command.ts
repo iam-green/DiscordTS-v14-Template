@@ -2,11 +2,12 @@ import {
   Client,
   CommandInteraction,
   CommandInteractionOptionResolver,
-  Guild,
   GuildMember,
   REST,
   Routes,
   SlashCommandBuilder,
+  SlashCommandSubcommandBuilder,
+  SlashCommandSubcommandGroupBuilder,
 } from 'discord.js';
 import { glob } from 'glob';
 import { getClientID } from './client';
@@ -21,7 +22,9 @@ type RunFunction = (options: RunOptions) => any;
 
 export type CommandType = {
   name: string[];
-  command: (builder: SlashCommandBuilder) => any;
+  command: (
+    builder: SlashCommandBuilder | SlashCommandSubcommandBuilder,
+  ) => any;
   guildId?: string[];
   run: RunFunction;
 };
@@ -34,6 +37,16 @@ export class ExtendedCommand {
   constructor(commandOptions: CommandType) {
     Object.assign(this, commandOptions);
   }
+}
+
+export interface CommandList {
+  [x: string]:
+    | SlashCommandBuilder
+    | {
+        [x: string]:
+          | SlashCommandSubcommandBuilder
+          | { [x: string]: SlashCommandSubcommandBuilder };
+      };
 }
 
 export class Command {
@@ -49,41 +62,145 @@ export class Command {
 
   static async registerCommands() {
     if (!process.env.BOT_TOKEN) throw new Error('No Token Provided');
-    const client_id = await getClientID();
     const rest = new REST().setToken(process.env.BOT_TOKEN);
-    const commands = await this.getCommands();
+    const convertCommand: CommandList = {};
+    const commands = (await this.getCommands()).filter(
+      (v) => !v.command.guildId || v.command.guildId.length < 1,
+    );
 
-    await rest.put(Routes.applicationCommands(client_id), {
-      body: commands
-        .map((v) => v.command)
-        .filter((v) => !v.guildId || v.guildId.length < 1)
-        .map((v) =>
-          v.name.map((_, idx) =>
-            v.command(new SlashCommandBuilder().setName(v.name[idx])).toJSON(),
-          ),
-        )
-        .reduce((a, b) => a.concat(b), []),
+    for (const command of commands)
+      for (const name of command.command.name) {
+        const nameList = name.split(' ');
+        if (nameList.length == 1) {
+          convertCommand[nameList[0]] = command.command.command(
+            new SlashCommandBuilder().setName(nameList[0]),
+          );
+        } else {
+          if (
+            !commands.find((v) => v.command.name.includes(nameList[0])) &&
+            !convertCommand[nameList[0]]
+          )
+            convertCommand[nameList[0]] = {};
+          if (nameList.length == 2) {
+            convertCommand[nameList[0]][nameList[1]] = command.command.command(
+              new SlashCommandSubcommandBuilder().setName(nameList[1]),
+            );
+          } else {
+            if (
+              !commands.find((v) =>
+                v.command.name.includes(`${nameList[0]} ${nameList[1]}`),
+              ) &&
+              !convertCommand[nameList[0]][nameList[1]]
+            )
+              convertCommand[nameList[0]][nameList[1]] = {};
+            convertCommand[nameList[0]][nameList[1]][nameList[2]] =
+              command.command.command(
+                new SlashCommandSubcommandBuilder().setName(nameList[2]),
+              );
+          }
+        }
+      }
+
+    const resultSlashCommand: SlashCommandBuilder[] = [];
+    for (const [key1, value1] of Object.entries(convertCommand))
+      if (value1 instanceof SlashCommandBuilder)
+        resultSlashCommand.push(value1);
+      else {
+        const slashCommand = new SlashCommandBuilder()
+          .setName(key1)
+          .setDescription(`'${key1}'의 서브 명령어`);
+        for (const [key2, value2] of Object.entries(value1))
+          if (value2 instanceof SlashCommandSubcommandBuilder)
+            slashCommand.addSubcommand(value2);
+          else {
+            const subSlashCommand = new SlashCommandSubcommandGroupBuilder()
+              .setName(key2)
+              .setDescription(`'${key1} ${key2}' 서브 명령어`);
+            for (const value3 of Object.values(value2))
+              subSlashCommand.addSubcommand(value3);
+            slashCommand.addSubcommandGroup(subSlashCommand);
+          }
+        resultSlashCommand.push(slashCommand);
+      }
+
+    await rest.put(Routes.applicationCommands(await getClientID()), {
+      body: resultSlashCommand.map((v) => v.toJSON()),
     });
   }
 
-  static async registerGuildCommands(guilds: Guild[]) {
+  static async registerGuildCommands() {
     if (!process.env.BOT_TOKEN) throw new Error('No Token Provided');
-    const client_id = await getClientID();
     const rest = new REST().setToken(process.env.BOT_TOKEN);
-    const guildCommands: { [x: string]: CommandType[] } = {};
-    const commands = await this.getCommands();
+    const convertGuildCommand: { [x: string]: CommandList } = {};
+    const commands = (await this.getCommands()).filter(
+      (v) => v.command.guildId && v.command.guildId.length > 0,
+    );
 
     for (const command of commands)
-      if (command.command.guildId)
-        for (const guildId of command.command.guildId) {
-          if (!guildCommands[guildId]) guildCommands[guildId] = [];
-          guildCommands[guildId].push(command.command);
+      for (const name of command.command.name)
+        for (const guild_id of command.command.guildId!) {
+          const nameList = name.split(' ');
+          if (nameList.length == 1) {
+            convertGuildCommand[guild_id][nameList[0]] =
+              command.command.command(
+                new SlashCommandBuilder().setName(nameList[0]),
+              );
+          } else {
+            if (
+              !commands.find((v) => v.command.name.includes(nameList[0])) ||
+              !convertGuildCommand[guild_id][nameList[0]]
+            )
+              convertGuildCommand[guild_id][nameList[0]] = {};
+            if (nameList.length == 2) {
+              convertGuildCommand[guild_id][nameList[0]][nameList[1]] =
+                command.command.command(
+                  new SlashCommandSubcommandBuilder().setName(nameList[1]),
+                );
+            } else {
+              if (
+                !commands.find((v) =>
+                  v.command.name.includes(`${nameList[0]} ${nameList[1]}`),
+                ) ||
+                !convertGuildCommand[guild_id][nameList[0]][nameList[1]]
+              )
+                convertGuildCommand[guild_id][nameList[0]][nameList[1]] = {};
+              convertGuildCommand[guild_id][nameList[0]][nameList[1]][
+                nameList[2]
+              ] = command.command.command(
+                new SlashCommandSubcommandBuilder().setName(nameList[2]),
+              );
+            }
+          }
         }
 
-    for (const guild of guilds) {
-      rest.put(Routes.applicationGuildCommands(client_id, guild.id), {
-        body: guildCommands[guild.id] || [],
-      });
-    }
+    const resultGuildCommand: { [x: string]: SlashCommandBuilder[] } = {};
+    for (const [key, value] of Object.entries(convertGuildCommand))
+      for (const [key1, value1] of Object.entries(value))
+        if (value1 instanceof SlashCommandBuilder)
+          resultGuildCommand[key].push(value1);
+        else {
+          const slashCommand = new SlashCommandBuilder()
+            .setName(key1)
+            .setDescription(`'${key1}'의 서브 명령어`);
+          for (const [key2, value2] of Object.entries(value1))
+            if (value2 instanceof SlashCommandSubcommandBuilder)
+              slashCommand.addSubcommand(value2);
+            else {
+              const subSlashCommand = new SlashCommandSubcommandGroupBuilder()
+                .setName(key2)
+                .setDescription(`'${key1} ${key2}' 서브 명령어`);
+              for (const value3 of Object.values(value2))
+                subSlashCommand.addSubcommand(value3);
+            }
+          resultGuildCommand[key].push(slashCommand);
+        }
+
+    for (const [key, value] of Object.entries(resultGuildCommand))
+      await rest.put(
+        Routes.applicationGuildCommands(await getClientID(), key),
+        {
+          body: value.map((v) => v.toJSON()),
+        },
+      );
   }
 }

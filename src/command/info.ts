@@ -5,7 +5,7 @@ export default new ExtendedCommand({
   name: ['정보'],
   command: (builder) => builder.setDescription('봇 정보를 확인합니다.'),
   run: async ({ interaction, client }) => {
-    if (!interaction.isCommand() || !interaction.guild) return;
+    if (!interaction.guild) return;
 
     const promises = await Promise.all([
       (client.shard?.fetchClientValues('guilds.cache.size') || []) as Promise<

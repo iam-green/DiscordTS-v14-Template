@@ -1,12 +1,14 @@
 import {
+  ApplicationCommandType,
   Client,
   ClientOptions,
   CommandInteractionOptionResolver,
   Events,
+  InteractionType,
 } from 'discord.js';
-import { Command, CommandType, ExtendedInteraction } from '.';
+import { Command, ExtendedInteraction } from '.';
 import { Log } from '../module/log';
-import { Event, ExtendedEvent } from './event';
+import { Event } from './event';
 
 export const getClientID = async () =>
   (
@@ -18,11 +20,6 @@ export const getClientID = async () =>
   ).id as string;
 
 export class ExtendedClient extends Client {
-  events: {
-    path: string;
-    event: ExtendedEvent<any>;
-  }[];
-  commands: { path: string; command: CommandType }[];
   runMode: string;
 
   constructor(option: ClientOptions) {
@@ -30,10 +27,6 @@ export class ExtendedClient extends Client {
     this.runMode = this.shard
       ? `Shard ${`#${this.shard.ids[0]}`.green}`
       : 'Main';
-    (async () => {
-      this.events = await Event.getEvents();
-      this.commands = await Command.getCommands();
-    })();
   }
 
   async start() {
@@ -45,23 +38,33 @@ export class ExtendedClient extends Client {
   }
 
   async registerModules() {
-    await Command.registerCommands();
-    await Command.registerGuildCommands(this.guilds.cache.map((v) => v));
     await this.addCommands();
     await this.addEvents();
   }
 
   async addCommands() {
-    for (const command of this.commands) {
+    const commands = await Command.getCommands();
+    for (const command of commands) {
       for (const name of command.command.name)
         Log.debug(
           `${'['.cyan}${this.runMode}${']'.cyan} Added ${name.green} Command (Location : ${command.path.yellow})`,
         );
     }
     this.on(Events.InteractionCreate, (interaction) => {
-      if (!interaction.isCommand()) return;
-      const command = this.commands.find((v) =>
-        v.command.name.includes(interaction.commandName),
+      if (
+        interaction.type != InteractionType.ApplicationCommand ||
+        interaction.commandType != ApplicationCommandType.ChatInput
+      )
+        return;
+      const name = [
+        interaction.commandName,
+        interaction.options.getSubcommandGroup(false),
+        interaction.options.getSubcommand(false),
+      ]
+        .filter((v) => v)
+        .join(' ');
+      const command = commands.find((v) =>
+        v.command.name.includes(name),
       )?.command;
       if (command)
         command.run({
@@ -73,7 +76,7 @@ export class ExtendedClient extends Client {
   }
 
   async addEvents() {
-    for (const event of this.events) {
+    for (const event of await Event.getEvents()) {
       Log.debug(
         `${'['.cyan}${this.runMode}${']'.cyan} Added ${event.event.event.green} Event (Location : ${event.path.yellow})`,
       );
