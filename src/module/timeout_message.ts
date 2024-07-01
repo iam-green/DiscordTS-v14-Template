@@ -9,7 +9,7 @@ export class TimeoutMessage {
       message,
       timeout: setTimeout(async () => {
         if (!message || !message.deletable) return;
-        message.delete();
+        message.delete().catch(() => null);
         this.list.splice(
           this.list.findIndex((v) => v.message.id == message.id),
           1,
