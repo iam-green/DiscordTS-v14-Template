@@ -19,6 +19,15 @@ export const getClientID = async () =>
     ).json()
   ).id as string;
 
+export const getBotOwner = async () =>
+  (
+    await (
+      await fetch('https://discordapp.com/api/oauth2/applications/@me', {
+        headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
+      })
+    ).json()
+  ).owner.id as string;
+
 export class ExtendedClient extends Client {
   runMode: string;
 
