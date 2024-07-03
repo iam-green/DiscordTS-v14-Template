@@ -18,15 +18,13 @@ interface RunOptions {
   args: CommandInteractionOptionResolver;
 }
 
-type RunFunction = (options: RunOptions) => any;
-
 export type CommandType = {
   name: string[];
   command: (
     builder: SlashCommandBuilder | SlashCommandSubcommandBuilder,
   ) => any;
   guildId?: string[];
-  run: RunFunction;
+  run: (options: RunOptions) => any;
 };
 
 export interface ExtendedInteraction extends CommandInteraction {
@@ -139,6 +137,7 @@ export class Command {
   static async registerGuildCommands() {
     if (!process.env.BOT_TOKEN) throw new Error('No Token Provided');
     const rest = new REST().setToken(process.env.BOT_TOKEN);
+    const client_id = await getClientID();
     const convertGuildCommand: { [x: string]: CommandList } = {};
     const commands = (await this.getCommands()).filter(
       (v) => v.command.guildId && v.command.guildId.length > 0,
@@ -159,12 +158,9 @@ export class Command {
       resultGuildCommand[key] = this.jsonToBuilder(value);
 
     for (const [key, value] of Object.entries(resultGuildCommand))
-      await rest.put(
-        Routes.applicationGuildCommands(await getClientID(), key),
-        {
-          body: value.map((v) => v.toJSON()),
-        },
-      );
+      await rest.put(Routes.applicationGuildCommands(client_id, key), {
+        body: value.map((v) => v.toJSON()),
+      });
 
     return commands;
   }

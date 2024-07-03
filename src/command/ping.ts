@@ -7,6 +7,7 @@ export default new ExtendedCommand({
   run: async ({ interaction }) => {
     if (!interaction.guild) return;
 
+    await interaction.deferReply({ ephemeral: true });
     await interaction.reply({
       embeds: [
         new EmbedBuilder()
@@ -21,7 +22,6 @@ export default new ExtendedCommand({
           })
           .setTimestamp(),
       ],
-      ephemeral: true,
     });
   },
 });

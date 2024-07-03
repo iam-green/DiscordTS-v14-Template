@@ -7,6 +7,8 @@ export default new ExtendedCommand({
   run: async ({ interaction, client }) => {
     if (!interaction.guild) return;
 
+    await interaction.deferReply({ ephemeral: true });
+
     const promises = await Promise.all([
       (client.shard?.fetchClientValues('guilds.cache.size') || []) as Promise<
         number[]
@@ -19,7 +21,7 @@ export default new ExtendedCommand({
     const guilds = promises[0].reduce((a, b) => a + b, 0);
     const members = promises[1].reduce((a, b) => a + b, 0);
 
-    return await interaction.reply({
+    return await interaction.editReply({
       embeds: [
         new EmbedBuilder()
           .setColor('#fba0a7')
@@ -46,7 +48,6 @@ export default new ExtendedCommand({
           })
           .setTimestamp(),
       ],
-      ephemeral: true,
     });
   },
 });

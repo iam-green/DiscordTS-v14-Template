@@ -6,7 +6,7 @@ import {
   Events,
   InteractionType,
 } from 'discord.js';
-import { Command, ExtendedInteraction } from '.';
+import { Command, ExtendedInteraction, Menu } from '.';
 import { Log } from '../module/log';
 import { Event } from './event';
 
@@ -48,6 +48,7 @@ export class ExtendedClient extends Client {
 
   async registerModules() {
     await this.addCommands();
+    await this.addMenus();
     await this.addEvents();
   }
 
@@ -73,6 +74,21 @@ export class ExtendedClient extends Client {
         command.run({
           args: interaction.options as CommandInteractionOptionResolver,
           client: this.shard!.client,
+          interaction: interaction as ExtendedInteraction,
+        });
+    });
+  }
+
+  async addMenus() {
+    const menus = await Menu.getMenus();
+    this.on(Events.InteractionCreate, (interaction) => {
+      if (!interaction.isContextMenuCommand()) return;
+      const menu = menus.find((v) =>
+        v.menu.name.includes(interaction.commandName),
+      );
+      if (menu)
+        menu.menu.run({
+          client: this,
           interaction: interaction as ExtendedInteraction,
         });
     });
