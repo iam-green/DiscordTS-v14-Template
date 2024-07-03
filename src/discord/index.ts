@@ -21,11 +21,11 @@ export const discordInit = async () => {
           `Added ${name.green} Command for ${guild_id.blue} Guild (Location : ${path.yellow})`,
         );
 
-  for (const { path, menu } of await Menu.registerMenus())
+  for (const { path, menu } of await Menu.getRegisteredMenus())
     for (const name of menu.name)
       Log.debug(`Added ${name.green} Context Menu (Location : ${path.yellow})`);
 
-  for (const { path, menu } of await Menu.registerGuildMenus())
+  for (const { path, menu } of await Menu.getRegisteredGuildMenus())
     for (const name of menu.name)
       for (const guild_id of menu.guildId || [])
         Log.debug(

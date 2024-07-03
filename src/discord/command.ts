@@ -2,6 +2,7 @@ import {
   Client,
   CommandInteraction,
   CommandInteractionOptionResolver,
+  ContextMenuCommandBuilder,
   GuildMember,
   REST,
   Routes,
@@ -11,6 +12,7 @@ import {
 } from 'discord.js';
 import { glob } from 'glob';
 import { getClientID } from './client';
+import { Menu } from './menu';
 
 interface RunOptions {
   client: Client;
@@ -124,11 +126,26 @@ export class Command {
     const commands = (await this.getCommands()).filter(
       (v) => !v.command.guildId || v.command.guildId.length < 1,
     );
+    const menus = (await Menu.getMenus()).filter(
+      (v) => !v.menu.guildId || v.menu.guildId.length < 1,
+    );
 
     await rest.put(Routes.applicationCommands(await getClientID()), {
-      body: this.jsonToBuilder(
-        this.commandToJson(commands.map((v) => v.command)),
-      ).map((v) => v.toJSON()),
+      body: [
+        ...this.jsonToBuilder(
+          this.commandToJson(commands.map((v) => v.command)),
+        ).map((v) => v.toJSON()),
+        ...menus
+          .map((v) =>
+            v.menu.name.map((name) =>
+              new ContextMenuCommandBuilder()
+                .setName(name)
+                .setType(v.menu.type)
+                .toJSON(),
+            ),
+          )
+          .reduce((a, b) => a.concat(b), []),
+      ],
     });
 
     return commands;
@@ -141,6 +158,9 @@ export class Command {
     const convertGuildCommand: { [x: string]: CommandList } = {};
     const commands = (await this.getCommands()).filter(
       (v) => v.command.guildId && v.command.guildId.length > 0,
+    );
+    const menus = (await Menu.getMenus()).filter(
+      (v) => v.menu.guildId && v.menu.guildId.length > 1,
     );
     const guildCommand: { [x: string]: CommandType[] } = {};
 
@@ -159,7 +179,20 @@ export class Command {
 
     for (const [key, value] of Object.entries(resultGuildCommand))
       await rest.put(Routes.applicationGuildCommands(client_id, key), {
-        body: value.map((v) => v.toJSON()),
+        body: [
+          ...value.map((v) => v.toJSON()),
+          ...menus
+            .filter((v) => v.menu.guildId?.includes(key))
+            .map((v) =>
+              v.menu.name.map((name) =>
+                new ContextMenuCommandBuilder()
+                  .setName(name)
+                  .setType(v.menu.type)
+                  .toJSON(),
+              ),
+            )
+            .reduce((a, b) => a.concat(b), []),
+        ],
       });
 
     return commands;
