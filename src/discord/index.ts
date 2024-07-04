@@ -36,5 +36,6 @@ export const discordInit = async () => {
     Log.debug(`Added ${event.event.green} Event (Location : ${path.yellow})`);
 
   await Shard.spawn();
+  await KoreanBots.init();
   setInterval(async () => KoreanBots.update(shard), 1000 * 60 * 10);
 };
