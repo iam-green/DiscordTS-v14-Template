@@ -67,15 +67,17 @@ export class ExtendedClient extends Client {
       ]
         .filter((v) => v)
         .join(' ');
-      const command = commands.find((v) =>
-        v.command.name.includes(name),
-      )?.command;
-      if (command)
-        command.run({
-          args: interaction.options as CommandInteractionOptionResolver,
-          client: this.shard!.client,
-          interaction: interaction as ExtendedInteraction,
-        });
+      const command = commands.find((v) => v.command.name.includes(name));
+      if (command?.command)
+        try {
+          command.command.run({
+            args: interaction.options as CommandInteractionOptionResolver,
+            client: this.shard!.client,
+            interaction: interaction as ExtendedInteraction,
+          });
+        } catch (e) {
+          Log.error(e, command.path);
+        }
     });
   }
 
@@ -87,15 +89,23 @@ export class ExtendedClient extends Client {
         v.menu.name.includes(interaction.commandName),
       );
       if (menu)
-        menu.menu.run({
-          client: this,
-          interaction: interaction as ExtendedInteraction,
-        });
+        try {
+          menu.menu.run({
+            client: this,
+            interaction: interaction as ExtendedInteraction,
+          });
+        } catch (e) {
+          Log.error(e, menu.path);
+        }
     });
   }
 
   async addEvents() {
     for (const event of await Event.getEvents())
-      this.on(event.event.event, event.event.run);
+      try {
+        this.on(event.event.event, event.event.run);
+      } catch (e) {
+        Log.error(e, event.path);
+      }
   }
 }
