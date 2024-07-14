@@ -34,6 +34,7 @@ export class Voice {
       voice_id: voice.channel.id,
       queue: [],
       connection,
+      repeat: false,
       adding: false,
     });
   }
@@ -45,7 +46,13 @@ export class Voice {
     (voice.player as any).setMaxListeners(0);
     voice.queue.push(option);
     if (voice.queue.length == 1) {
-      voice.player.play(createAudioResource(voice.queue[0].url));
+      voice.resource = createAudioResource(voice.queue[0].voice, {
+        inlineVolume: true,
+      });
+      voice.resource.volume?.setVolume(
+        (option.volume || 1) * (voice.volume || 1),
+      );
+      voice.player.play(voice.resource);
       (voice.connection as any).setMaxListeners(0);
       voice.connection.subscribe(voice.player);
       voice.connection.on(VoiceConnectionStatus.Disconnected, async () =>
@@ -55,21 +62,61 @@ export class Voice {
         if (!voice.adding) {
           voice.adding = true;
           await (() => new Promise((resolve) => setTimeout(resolve)))();
+          if (voice.repeat) voice.queue.push(voice.queue[0]);
           voice.queue.shift();
           voice.queue.sort((a, b) => +a.date - +b.date);
-          if (voice.queue.length > 0)
-            voice.player?.play(createAudioResource(voice.queue[0].url));
+          if (voice.queue.length > 0) {
+            voice.resource = createAudioResource(voice.queue[0].voice, {
+              inlineVolume: true,
+            });
+            voice.resource.volume?.setVolume(
+              (option.volume || 1) * (voice.volume || 1),
+            );
+            voice.player?.play(voice.resource);
+          }
           voice.adding = false;
         }
       });
     }
   }
 
+  static skip(guild: Guild, count: number = 1) {
+    const voice = this.findInfo(guild?.id);
+    if (!voice) return;
+    voice.queue.splice(
+      0,
+      (count > voice.queue.length ? voice.queue.length : count) - 1,
+    );
+    voice.player?.stop();
+  }
+
+  static shuffle(guild: Guild) {
+    const voice = this.findInfo(guild?.id);
+    if (!voice) return;
+    voice.queue = [
+      voice.queue[0],
+      ...voice.queue.slice(1).sort(() => Math.random() - 0.5),
+    ];
+  }
+
+  static repeat(guild: Guild, status: boolean) {
+    const voice = this.findInfo(guild?.id);
+    if (!voice) return;
+    voice.repeat = status;
+  }
+
+  static volume(guild: Guild, volume: number) {
+    const voice = this.findInfo(guild?.id);
+    if (!voice) return;
+    voice.volume = volume;
+    voice.resource?.volume?.setVolume((voice.queue[0].volume || 1) * volume);
+  }
+
   static stop(guild: Guild) {
     const voice = this.findInfo(guild?.id);
     if (!voice) return;
-    voice.player?.stop();
     voice.queue = [];
+    voice.player?.stop();
   }
 
   static quit(guild: Guild) {

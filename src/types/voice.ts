@@ -1,15 +1,20 @@
-import { AudioPlayer, VoiceConnection } from '@discordjs/voice';
+import { AudioPlayer, AudioResource, VoiceConnection } from '@discordjs/voice';
+import internal from 'stream';
 
 export interface VoiceInfo {
   guild_id: string;
   voice_id: string;
   queue: VoiceQueueInfo[];
   connection: VoiceConnection;
+  resource?: AudioResource;
   player?: AudioPlayer;
+  volume?: number;
+  repeat: boolean;
   adding: boolean;
 }
 
 export interface VoiceQueueInfo {
-  url: string;
+  voice: string | internal.Readable;
+  volume?: number;
   date: Date;
 }
