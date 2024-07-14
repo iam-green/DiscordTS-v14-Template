@@ -17,4 +17,5 @@ export interface VoiceQueueInfo {
   voice: string | internal.Readable;
   volume?: number;
   date: Date;
+  info?: any;
 }
