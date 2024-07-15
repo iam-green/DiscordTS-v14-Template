@@ -5,8 +5,20 @@ import {
   createAudioPlayer,
   AudioPlayerStatus,
   VoiceConnectionStatus,
+  NoSubscriberBehavior,
 } from '@discordjs/voice';
+import ytdl from '@distube/ytdl-core';
+import scdl from 'soundcloud-downloader';
 import { VoiceInfo, VoiceQueueInfo } from '../types';
+import internal from 'stream';
+
+function ytdl_(link: string, options?: ytdl.downloadOptions) {
+  try {
+    return ytdl(link, options);
+  } catch (e) {
+    return ytdl_(link, options);
+  }
+}
 
 export class Voice {
   static list: VoiceInfo[] = [];
@@ -39,16 +51,29 @@ export class Voice {
     });
   }
 
-  static play(guild: Guild, option: VoiceQueueInfo) {
+  static async play(guild: Guild, option: VoiceQueueInfo) {
     const voice = this.findInfo(guild?.id);
     if (!voice) return;
-    if (!voice.player) voice.player = createAudioPlayer();
+    if (!voice.player)
+      voice.player = createAudioPlayer({
+        behaviors: { noSubscriber: NoSubscriberBehavior.Play },
+      });
     (voice.player as any).setMaxListeners(0);
     voice.queue.push(option);
     if (voice.queue.length == 1) {
-      voice.resource = createAudioResource(voice.queue[0].voice, {
-        inlineVolume: true,
-      });
+      const voice_ =
+        voice.queue[0].voice.type == 'url'
+          ? voice.queue[0].voice.link
+          : voice.queue[0].voice.type == 'ytdl'
+            ? ytdl_(voice.queue[0].voice.link, {
+                filter: 'audioonly',
+                quality: 'highest',
+                highWaterMark: 1 << 25,
+              })
+            : ((await scdl.download(
+                voice.queue[0].voice.link,
+              )) as internal.Readable);
+      voice.resource = createAudioResource(voice_, { inlineVolume: true });
       voice.resource.volume?.setVolume(
         (option.volume || 1) * (voice.volume || 1),
       );
@@ -64,9 +89,19 @@ export class Voice {
           await (() => new Promise((resolve) => setTimeout(resolve)))();
           if (voice.repeat) voice.queue.push(voice.queue[0]);
           voice.queue.shift();
-          voice.queue.sort((a, b) => +a.date - +b.date);
           if (voice.queue.length > 0) {
-            voice.resource = createAudioResource(voice.queue[0].voice, {
+            const voice_ =
+              voice.queue[0].voice.type == 'url'
+                ? voice.queue[0].voice.link
+                : voice.queue[0].voice.type == 'ytdl'
+                  ? ytdl(voice.queue[0].voice.link, {
+                      filter: 'audioonly',
+                      quality: 'highest',
+                    })
+                  : ((await scdl.download(
+                      voice.queue[0].voice.link,
+                    )) as internal.Readable);
+            voice.resource = createAudioResource(voice_, {
               inlineVolume: true,
             });
             voice.resource.volume?.setVolume(
@@ -122,6 +157,8 @@ export class Voice {
   static quit(guild: Guild) {
     const voice = this.findInfo(guild?.id);
     if (!voice) return;
+    voice.queue = [];
+    voice.player?.stop();
     voice.connection.destroy();
     this.removeInfo(guild?.id);
   }

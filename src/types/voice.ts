@@ -1,5 +1,4 @@
 import { AudioPlayer, AudioResource, VoiceConnection } from '@discordjs/voice';
-import internal from 'stream';
 
 export interface VoiceInfo {
   guild_id: string;
@@ -14,8 +13,10 @@ export interface VoiceInfo {
 }
 
 export interface VoiceQueueInfo {
-  voice: string | internal.Readable;
+  voice: {
+    link: string;
+    type: 'url' | 'ytdl' | 'soundcloud-downloader';
+  };
   volume?: number;
-  date: Date;
   info?: any;
 }
