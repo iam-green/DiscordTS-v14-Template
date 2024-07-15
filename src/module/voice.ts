@@ -151,14 +151,19 @@ export class Voice {
     const voice = this.findInfo(guild?.id);
     if (!voice) return;
     voice.queue = [];
+    try {
+      voice.player?.stop();
+    } catch (e) {}
     voice.player?.stop();
   }
 
   static quit(guild: Guild) {
     const voice = this.findInfo(guild?.id);
     if (!voice) return;
-    voice.queue = [];
-    voice.player?.stop();
+    try {
+      voice.queue = [];
+      voice.player?.stop();
+    } catch (e) {}
     voice.connection.destroy();
     this.removeInfo(guild?.id);
   }
