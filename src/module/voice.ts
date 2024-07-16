@@ -7,18 +7,7 @@ import {
   VoiceConnectionStatus,
   NoSubscriberBehavior,
 } from '@discordjs/voice';
-import ytdl from '@distube/ytdl-core';
-import scdl from 'soundcloud-downloader';
 import { VoiceInfo, VoiceQueueInfo } from '../types';
-import internal from 'stream';
-
-function ytdl_(link: string, options?: ytdl.downloadOptions) {
-  try {
-    return ytdl(link, options);
-  } catch (e) {
-    return ytdl_(link, options);
-  }
-}
 
 export class Voice {
   static list: VoiceInfo[] = [];
@@ -61,19 +50,9 @@ export class Voice {
     (voice.player as any).setMaxListeners(0);
     voice.queue.push(option);
     if (voice.queue.length == 1) {
-      const voice_ =
-        voice.queue[0].voice.type == 'url'
-          ? voice.queue[0].voice.link
-          : voice.queue[0].voice.type == 'ytdl'
-            ? ytdl_(voice.queue[0].voice.link, {
-                filter: 'audioonly',
-                quality: 'highest',
-                highWaterMark: 1 << 25,
-              })
-            : ((await scdl.download(
-                voice.queue[0].voice.link,
-              )) as internal.Readable);
-      voice.resource = createAudioResource(voice_, { inlineVolume: true });
+      voice.resource = createAudioResource(await voice.queue[0].voice(), {
+        inlineVolume: true,
+      });
       voice.resource.volume?.setVolume(
         (option.volume || 1) * (voice.volume || 1),
       );
@@ -90,18 +69,7 @@ export class Voice {
           if (voice.repeat) voice.queue.push(voice.queue[0]);
           voice.queue.shift();
           if (voice.queue.length > 0) {
-            const voice_ =
-              voice.queue[0].voice.type == 'url'
-                ? voice.queue[0].voice.link
-                : voice.queue[0].voice.type == 'ytdl'
-                  ? ytdl(voice.queue[0].voice.link, {
-                      filter: 'audioonly',
-                      quality: 'highest',
-                    })
-                  : ((await scdl.download(
-                      voice.queue[0].voice.link,
-                    )) as internal.Readable);
-            voice.resource = createAudioResource(voice_, {
+            voice.resource = createAudioResource(await voice.queue[0].voice(), {
               inlineVolume: true,
             });
             voice.resource.volume?.setVolume(
