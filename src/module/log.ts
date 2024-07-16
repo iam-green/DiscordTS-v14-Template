@@ -32,11 +32,13 @@ export class Log {
   static error(error, file?: string) {
     console.log(
       `${'['.cyan}${'ERROR'.red}${']'.cyan} ${'('.cyan}${this._date().yellow}${')'.cyan} ${
-        [
-          `${error.name} - ${error.message}`,
-          `File : ${file || error.fileName}`,
-          `Stack : ${error.stack.replace(/\n/g, '\n\t')}`,
-        ].join('\n\t').red
+        typeof error == 'string'
+          ? error.red
+          : [
+              `${error.name} - ${error.message}`,
+              `File : ${file || error.fileName}`,
+              `Stack : ${error.stack.replace(/\n/g, '\n\t')}`,
+            ].join('\n\t').red
       }`,
     );
   }
