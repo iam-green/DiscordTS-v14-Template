@@ -8,6 +8,7 @@ import {
   NoSubscriberBehavior,
 } from '@discordjs/voice';
 import { VoiceInfo, VoiceQueueInfo } from '../types';
+import { Log } from './log';
 
 export class Voice {
   static list: VoiceInfo[] = [];
@@ -40,6 +41,18 @@ export class Voice {
     });
   }
 
+  static async subscribe(voice: VoiceInfo, option: VoiceQueueInfo) {
+    voice.resource = createAudioResource(await voice.queue[0].voice(), {
+      inlineVolume: true,
+    });
+    voice.resource.volume?.setVolume(
+      (option.volume || 1) * (voice.volume || 1),
+    );
+    voice.player?.play(voice.resource);
+    (voice.connection as any).setMaxListeners(0);
+    if (voice.player) voice.connection.subscribe(voice.player);
+  }
+
   static async play(guild: Guild, option: VoiceQueueInfo) {
     const voice = this.findInfo(guild?.id);
     if (!voice) return;
@@ -50,33 +63,30 @@ export class Voice {
     (voice.player as any).setMaxListeners(0);
     voice.queue.push(option);
     if (voice.queue.length == 1) {
-      voice.resource = createAudioResource(await voice.queue[0].voice(), {
-        inlineVolume: true,
-      });
-      voice.resource.volume?.setVolume(
-        (option.volume || 1) * (voice.volume || 1),
-      );
-      voice.player.play(voice.resource);
-      (voice.connection as any).setMaxListeners(0);
-      voice.connection.subscribe(voice.player);
+      const audioPlayerStatus = { attempt: 1, restarting: false };
+      this.subscribe(voice, option);
       voice.connection.on(VoiceConnectionStatus.Disconnected, async () =>
         this.quit(guild),
       );
+      voice.player?.on('error', async (e) => {
+        if (audioPlayerStatus.restarting) return;
+        audioPlayerStatus.restarting = true;
+        Log.warn(
+          `AudioPlayer error occured, attempt: ${audioPlayerStatus.attempt++}`
+            .red,
+        );
+        if (audioPlayerStatus.attempt > 5) throw e;
+        audioPlayerStatus.restarting = false;
+        return await this.subscribe(voice, option);
+      });
       voice.player?.on(AudioPlayerStatus.Idle, async () => {
+        audioPlayerStatus.attempt = 1;
         if (!voice.adding) {
           voice.adding = true;
           await (() => new Promise((resolve) => setTimeout(resolve)))();
           if (voice.repeat) voice.queue.push(voice.queue[0]);
           voice.queue.shift();
-          if (voice.queue.length > 0) {
-            voice.resource = createAudioResource(await voice.queue[0].voice(), {
-              inlineVolume: true,
-            });
-            voice.resource.volume?.setVolume(
-              (option.volume || 1) * (voice.volume || 1),
-            );
-            voice.player?.play(voice.resource);
-          }
+          if (voice.queue.length > 0) this.subscribe(voice, option);
           voice.adding = false;
         }
       });
@@ -86,10 +96,11 @@ export class Voice {
   static skip(guild: Guild, count: number = 1) {
     const voice = this.findInfo(guild?.id);
     if (!voice) return;
-    voice.queue.splice(
+    const queue = voice.queue.splice(
       0,
       (count > voice.queue.length ? voice.queue.length : count) - 1,
     );
+    if (voice.repeat) voice.queue.push(...queue);
     voice.player?.stop();
   }
 
