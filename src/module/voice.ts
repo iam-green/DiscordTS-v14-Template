@@ -56,13 +56,13 @@ export class Voice {
   static async play(guild: Guild, option: VoiceQueueInfo) {
     const voice = this.findInfo(guild?.id);
     if (!voice) return;
-    if (!voice.player)
-      voice.player = createAudioPlayer({
-        behaviors: { noSubscriber: NoSubscriberBehavior.Play },
-      });
-    (voice.player as any).setMaxListeners(0);
     voice.queue.push(option);
     if (voice.queue.length == 1) {
+      if (!voice.player)
+        voice.player = createAudioPlayer({
+          behaviors: { noSubscriber: NoSubscriberBehavior.Play },
+        });
+      (voice.player as any).setMaxListeners(0);
       const audioPlayerStatus = { attempt: 1, restarting: false };
       this.subscribe(voice, option);
       voice.connection.on(VoiceConnectionStatus.Disconnected, async () =>
