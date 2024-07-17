@@ -8,7 +8,7 @@ export default new ExtendedCommand({
     if (!interaction.guild) return;
 
     await interaction.deferReply({ ephemeral: true });
-    await interaction.reply({
+    await interaction.editReply({
       embeds: [
         new EmbedBuilder()
           .setColor('#fba0a7')
