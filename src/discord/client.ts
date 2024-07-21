@@ -35,7 +35,7 @@ export class ExtendedClient extends Client {
   }
 
   async addCommands() {
-    const commands = await Command.getCommands();
+    const commands = await Command.getAllCommands();
     this.on(Events.InteractionCreate, (interaction) => {
       if (
         interaction.type != InteractionType.ApplicationCommand ||
@@ -64,7 +64,7 @@ export class ExtendedClient extends Client {
   }
 
   async addMenus() {
-    const menus = await Menu.getMenus();
+    const menus = await Menu.getAllMenus();
     this.on(Events.InteractionCreate, (interaction) => {
       if (!interaction.isContextMenuCommand()) return;
       const menu = menus.find((v) =>

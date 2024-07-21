@@ -2,7 +2,6 @@ import {
   Client,
   CommandInteraction,
   CommandInteractionOptionResolver,
-  ContextMenuCommandBuilder,
   GuildMember,
   REST,
   Routes,
@@ -11,8 +10,8 @@ import {
   SlashCommandSubcommandGroupBuilder,
 } from 'discord.js';
 import { glob } from 'glob';
-import { Menu } from './menu';
-import { DiscordUtil } from './';
+import { Log } from '../module';
+import { DiscordUtil } from './util';
 
 interface RunOptions {
   client: Client;
@@ -39,7 +38,7 @@ export class ExtendedCommand {
   }
 }
 
-export interface CommandList {
+export interface CommandBuilderList {
   [x: string]:
     | SlashCommandBuilder
     | {
@@ -49,9 +48,20 @@ export interface CommandList {
       };
 }
 
+export interface Commands {
+  data: {
+    path: string;
+    command: CommandType;
+  }[];
+  json: any[];
+}
+
 export class Command {
-  static commandToJson(commands: CommandType[]): CommandList {
-    const result: CommandList = {};
+  private static commands?: Commands;
+  private static guildCommands?: { [x: string]: Commands };
+
+  static commandToJson(commands: CommandType[]): CommandBuilderList {
+    const result: CommandBuilderList = {};
     for (const command of commands)
       for (const name of command.name) {
         const nameList = name.split(' ');
@@ -86,7 +96,7 @@ export class Command {
     return result;
   }
 
-  static jsonToBuilder(list: CommandList): SlashCommandBuilder[] {
+  static jsonToBuilder(list: CommandBuilderList): SlashCommandBuilder[] {
     const result: SlashCommandBuilder[] = [];
     for (const [key1, value1] of Object.entries(list))
       if (value1 instanceof SlashCommandBuilder) result.push(value1);
@@ -110,7 +120,7 @@ export class Command {
     return result;
   }
 
-  static async getCommands() {
+  static async getAllCommands() {
     const result: { path: string; command: CommandType }[] = [];
     const commands = glob.sync(
       `${__dirname.replace(/\\/g, '/')}/../command/**/*{.ts,.js}`,
@@ -120,81 +130,91 @@ export class Command {
     return result;
   }
 
-  static async registerCommands() {
-    if (!process.env.BOT_TOKEN) throw new Error('No Token Provided');
-    const rest = new REST().setToken(process.env.BOT_TOKEN);
-    const commands = (await this.getCommands()).filter(
-      (v) => !v.command.guildId || v.command.guildId.length < 1,
-    );
-    const menus = (await Menu.getMenus()).filter(
-      (v) => !v.menu.guildId || v.menu.guildId.length < 1,
-    );
-
-    await rest.put(Routes.applicationCommands(await DiscordUtil.clientId()), {
-      body: [
-        ...this.jsonToBuilder(
+  static async getCommands() {
+    if (!this.commands) {
+      const commands = (await this.getAllCommands()).filter(
+        (v) => !v.command.guildId || v.command.guildId.length < 1,
+      );
+      this.commands = {
+        data: commands,
+        json: this.jsonToBuilder(
           this.commandToJson(commands.map((v) => v.command)),
         ).map((v) => v.toJSON()),
-        ...menus
-          .map((v) =>
-            v.menu.name.map((name) =>
-              new ContextMenuCommandBuilder()
-                .setName(name)
-                .setType(v.menu.type)
-                .toJSON(),
-            ),
-          )
-          .reduce((a, b) => a.concat(b), []),
-      ],
-    });
-
-    return commands;
+      };
+    }
+    return this.commands;
   }
 
-  static async registerGuildCommands() {
-    if (!process.env.BOT_TOKEN) throw new Error('No Token Provided');
+  static async getGuildCommands() {
+    if (!this.guildCommands) {
+      const commands = (await this.getAllCommands()).filter(
+        (v) => v.command.guildId && v.command.guildId.length > 0,
+      );
+
+      const result: { [x: string]: Commands } = {};
+
+      for (const command of commands)
+        for (const guild_id of command.command.guildId!) {
+          if (!result[guild_id]) result[guild_id] = { data: [], json: [] };
+          result[guild_id].data.push(command);
+        }
+
+      for (const [key, value] of Object.entries(result))
+        result[key].json.push(
+          this.jsonToBuilder(
+            this.commandToJson(value.data.map((v) => v.command)),
+          ).map((v) => v.toJSON()),
+        );
+
+      this.guildCommands = result;
+    }
+    return this.guildCommands;
+  }
+
+  static async logCommands() {
+    const commands = await this.getCommands();
+    const guildCommands = await this.getGuildCommands();
+    for (const { path, command } of commands.data)
+      for (const name of command.name)
+        Log.debug(`Added ${name.green} Command (Location : ${path.yellow})`);
+
+    for (const { path, command } of Object.keys(guildCommands)
+      .map((v) => guildCommands[v].data)
+      .flat())
+      for (const name of command.name)
+        for (const guild_id of command.guildId || [])
+          Log.debug(
+            `Added ${name.green} Command for ${guild_id.blue} Guild (Location : ${path.yellow})`,
+          );
+  }
+
+  static async registerCommand(other_commands?: any[]) {
+    if (!process.env.BOT_TOKEN) throw new Error('No Bot Token');
+    const rest = new REST().setToken(process.env.BOT_TOKEN);
+    await rest.put(Routes.applicationCommands(await DiscordUtil.clientId()), {
+      body: [...(await this.getCommands()).json, ...(other_commands || [])],
+    });
+  }
+
+  static async registerGuildCommand(other_commands?: { [x: string]: any[] }) {
+    if (!process.env.BOT_TOKEN) throw new Error('No Bot Token');
     const rest = new REST().setToken(process.env.BOT_TOKEN);
     const client_id = await DiscordUtil.clientId();
-    const convertGuildCommand: { [x: string]: CommandList } = {};
-    const commands = (await this.getCommands()).filter(
-      (v) => v.command.guildId && v.command.guildId.length > 0,
-    );
-    const menus = (await Menu.getMenus()).filter(
-      (v) => v.menu.guildId && v.menu.guildId.length > 1,
-    );
-    const guildCommand: { [x: string]: CommandType[] } = {};
 
-    for (const command of commands)
-      for (const guild_id of command.command.guildId!) {
-        if (!guildCommand[guild_id]) guildCommand[guild_id] = [];
-        guildCommand[guild_id].push(command.command);
-      }
+    const guildCommands = await this.getGuildCommands();
+    const list: { [x: string]: any[] } = {};
+    for (const key of Object.keys(
+      Object.assign(guildCommands, other_commands),
+    )) {
+      if (!list[key]) list[key] = [];
+      if (guildCommands[key]) list[key].push(guildCommands[key].json);
+      if (other_commands && other_commands[key])
+        list[key].push(other_commands[key]);
+    }
 
-    for (const [key, value] of Object.entries(guildCommand))
-      convertGuildCommand[key] = this.commandToJson(value);
-
-    const resultGuildCommand: { [x: string]: SlashCommandBuilder[] } = {};
-    for (const [key, value] of Object.entries(convertGuildCommand))
-      resultGuildCommand[key] = this.jsonToBuilder(value);
-
-    for (const [key, value] of Object.entries(resultGuildCommand))
-      await rest.put(Routes.applicationGuildCommands(client_id, key), {
-        body: [
-          ...value.map((v) => v.toJSON()),
-          ...menus
-            .filter((v) => v.menu.guildId?.includes(key))
-            .map((v) =>
-              v.menu.name.map((name) =>
-                new ContextMenuCommandBuilder()
-                  .setName(name)
-                  .setType(v.menu.type)
-                  .toJSON(),
-              ),
-            )
-            .reduce((a, b) => a.concat(b), []),
-        ],
+    for (const [guild_id, body] of Object.entries(list))
+      await rest.put(Routes.applicationGuildCommands(client_id, guild_id), {
+        body,
       });
-
-    return commands;
   }
 }

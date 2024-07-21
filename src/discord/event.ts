@@ -1,5 +1,6 @@
 import { ClientEvents } from 'discord.js';
 import { glob } from 'glob';
+import { Log } from '../module';
 
 export class ExtendedEvent<Key extends keyof ClientEvents> {
   constructor(
@@ -17,5 +18,10 @@ export class Event {
     for (const path of events)
       result.push({ path, event: (await import(path))?.default });
     return result;
+  }
+
+  static async logEvents() {
+    for (const { path, event } of await this.getEvents())
+      Log.debug(`Added ${event.event.green} Event (Location : ${path.yellow})`);
   }
 }
