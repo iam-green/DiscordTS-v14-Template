@@ -11,8 +11,8 @@ import {
   SlashCommandSubcommandGroupBuilder,
 } from 'discord.js';
 import { glob } from 'glob';
-import { getClientID } from './client';
 import { Menu } from './menu';
+import { DiscordUtil } from './';
 
 interface RunOptions {
   client: Client;
@@ -130,7 +130,7 @@ export class Command {
       (v) => !v.menu.guildId || v.menu.guildId.length < 1,
     );
 
-    await rest.put(Routes.applicationCommands(await getClientID()), {
+    await rest.put(Routes.applicationCommands(await DiscordUtil.clientId()), {
       body: [
         ...this.jsonToBuilder(
           this.commandToJson(commands.map((v) => v.command)),
@@ -154,7 +154,7 @@ export class Command {
   static async registerGuildCommands() {
     if (!process.env.BOT_TOKEN) throw new Error('No Token Provided');
     const rest = new REST().setToken(process.env.BOT_TOKEN);
-    const client_id = await getClientID();
+    const client_id = await DiscordUtil.clientId();
     const convertGuildCommand: { [x: string]: CommandList } = {};
     const commands = (await this.getCommands()).filter(
       (v) => v.command.guildId && v.command.guildId.length > 0,

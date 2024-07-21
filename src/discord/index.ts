@@ -8,6 +8,7 @@ export * from './client';
 export * from './command';
 export * from './event';
 export * from './menu';
+export * from './util';
 
 export const discordInit = async () => {
   for (const { path, command } of await Command.registerCommands())

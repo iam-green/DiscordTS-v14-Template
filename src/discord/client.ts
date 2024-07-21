@@ -10,24 +10,6 @@ import { Command, ExtendedInteraction, Menu } from '.';
 import { Log } from '../module/log';
 import { Event } from './event';
 
-export const getClientID = async () =>
-  (
-    await (
-      await fetch('https://discordapp.com/api/oauth2/applications/@me', {
-        headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
-      })
-    ).json()
-  ).id as string;
-
-export const getBotOwner = async () => {
-  const data = await (
-    await fetch('https://discordapp.com/api/oauth2/applications/@me', {
-      headers: { Authorization: `Bot ${process.env.BOT_TOKEN}` },
-    })
-  ).json();
-  return (data.team.owner_user_id || data.owner.id) as string;
-};
-
 export class ExtendedClient extends Client {
   runMode: string;
 

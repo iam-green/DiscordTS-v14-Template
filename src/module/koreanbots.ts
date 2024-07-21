@@ -1,7 +1,7 @@
 import { Koreanbots } from 'koreanbots';
 import { Log } from './log';
-import { getClientID } from '../discord';
 import { ShardingManager } from 'discord.js';
+import { DiscordUtil } from '../discord';
 
 export class KoreanBots {
   static bot?: Koreanbots;
@@ -10,7 +10,7 @@ export class KoreanBots {
     if (!process.env.KOREANBOTS_TOKEN) return;
     this.bot = new Koreanbots({
       api: { token: process.env.KOREANBOTS_TOKEN },
-      clientID: await getClientID(),
+      clientID: await DiscordUtil.clientId(),
     });
   }
 
