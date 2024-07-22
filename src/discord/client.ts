@@ -82,10 +82,12 @@ export class ExtendedClient extends Client {
 
   async addEvents() {
     for (const event of await Event.getEvents())
-      try {
-        this.on(event.event.event, event.event.run);
-      } catch (e) {
-        Log.error(e, event.path);
-      }
+      this.on(event.event.event, (...args) => {
+        try {
+          event.event.run(...args);
+        } catch (e) {
+          Log.error(e, event.path);
+        }
+      });
   }
 }
