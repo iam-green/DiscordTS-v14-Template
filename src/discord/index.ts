@@ -1,14 +1,15 @@
 import { KoreanBots } from '../module';
+import { Cluster } from './cluster';
 import { Command } from './command';
 import { Event } from './event';
 import { Menu } from './menu';
-import { Shard, shard } from './shard';
 
 export * from './client';
 export * from './command';
 export * from './event';
 export * from './menu';
 export * from './util';
+export * from './cluster';
 
 export const discordInit = async () => {
   await Command.registerCommand(await Menu.getMenuJSON());
@@ -18,7 +19,7 @@ export const discordInit = async () => {
   await Menu.logMenus();
   await Event.logEvents();
 
-  await Shard.spawn();
+  await Cluster.spawn();
   await KoreanBots.init();
-  setInterval(async () => KoreanBots.update(shard), 1000 * 60 * 10);
+  setInterval(async () => KoreanBots.update(), 1000 * 60 * 10);
 };

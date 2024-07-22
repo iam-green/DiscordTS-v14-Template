@@ -1,5 +1,4 @@
 import {
-  Client,
   CommandInteraction,
   CommandInteractionOptionResolver,
   GuildMember,
@@ -12,9 +11,10 @@ import {
 import { glob } from 'glob';
 import { Log } from '../module';
 import { DiscordUtil } from './util';
+import { ExtendedClient } from './client';
 
 interface RunOptions {
-  client: Client;
+  client: ExtendedClient;
   interaction: ExtendedInteraction;
   args: CommandInteractionOptionResolver;
 }

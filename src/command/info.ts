@@ -10,10 +10,10 @@ export default new ExtendedCommand({
     await interaction.deferReply({ ephemeral: true });
 
     const promises = await Promise.all([
-      (client.shard?.fetchClientValues('guilds.cache.size') || []) as Promise<
+      (client.cluster.fetchClientValues('guilds.cache.size') || []) as Promise<
         number[]
       >,
-      (client.shard?.broadcastEval((c) =>
+      (client.cluster.broadcastEval((c) =>
         c.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0),
       ) || []) as Promise<number[]>,
     ]);
@@ -38,8 +38,12 @@ export default new ExtendedCommand({
               inline: true,
             },
             {
+              name: '클러스터',
+              value: `\`${client.cluster.count}\`개 중 \`${client.cluster.id + 1}\`번 클러스터`,
+            },
+            {
               name: '샤드',
-              value: `\`${client.shard?.count}\`개 중 \`${client.shard!.ids[0] + 1}\`번 샤드`,
+              value: `\`${client.cluster.info.TOTAL_SHARDS}\`개 중 \`${interaction.guild.shardId + 1}\`번 샤드`,
             },
           )
           .setFooter({

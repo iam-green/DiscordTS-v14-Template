@@ -1,14 +1,11 @@
-import {
-  Client,
-  ContextMenuCommandBuilder,
-  ContextMenuCommandType,
-} from 'discord.js';
+import { ContextMenuCommandBuilder, ContextMenuCommandType } from 'discord.js';
 import { ExtendedInteraction } from './command';
 import { glob } from 'glob';
 import { Log } from '../module';
+import { ExtendedClient } from './client';
 
 interface RunOptions {
-  client: Client;
+  client: ExtendedClient;
   interaction: ExtendedInteraction;
 }
 

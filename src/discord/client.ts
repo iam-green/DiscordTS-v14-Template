@@ -9,22 +9,20 @@ import {
 import { Command, ExtendedInteraction, Menu } from '.';
 import { Log } from '../module/log';
 import { Event } from './event';
+import { ClusterClient } from 'discord-hybrid-sharding';
 
 export class ExtendedClient extends Client {
-  runMode: string;
+  cluster = new ClusterClient(this);
 
   constructor(option: ClientOptions) {
     super(option);
-    this.runMode = this.shard
-      ? `Shard ${`#${this.shard.ids[0]}`.green}`
-      : 'Main';
   }
 
   async start() {
     await this.registerModules();
     await this.login(process.env.BOT_TOKEN);
     Log.info(
-      `${'['.cyan}${this.runMode}${']'.cyan} Logged in as ${this.user?.tag.green}!`,
+      `${'['.cyan}Cluster ${`#${this.cluster.id}`.green}${']'.cyan} Logged in as ${this.user?.tag.green}!`,
     );
   }
 
@@ -54,7 +52,7 @@ export class ExtendedClient extends Client {
         try {
           command.command.run({
             args: interaction.options as CommandInteractionOptionResolver,
-            client: this.shard!.client,
+            client: this,
             interaction: interaction as ExtendedInteraction,
           });
         } catch (e) {
