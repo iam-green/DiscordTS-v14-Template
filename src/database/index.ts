@@ -5,10 +5,10 @@ import * as schema from '../database/schema';
 
 const queryClient = new Client(process.env.DATABASE_URL || '');
 
-export const databaseInit = async () => {
+export const databaseInit = async (prefix: string = '') => {
   if (process.env.DATABASE_URL) {
     await queryClient.connect();
-    Log.info('Database Connected');
+    Log.info(`${prefix ? `${prefix} ` : ''}Database Connected`);
   }
 };
 
