@@ -3,7 +3,14 @@ import { ExtendedCommand } from '../discord';
 
 export default new ExtendedCommand({
   name: ['정보'],
-  command: (builder) => builder.setDescription('봇 정보를 확인합니다.'),
+  localization: { ko: '정보', 'en-US': 'info' },
+  builder: (builder) =>
+    builder
+      .setDescription('봇 정보를 확인합니다.')
+      .setDescriptionLocalizations({
+        ko: '봇 정보를 확인합니다.',
+        'en-US': 'Check bot information.',
+      }),
   run: async ({ interaction, client }) => {
     if (!interaction.guild) return;
 

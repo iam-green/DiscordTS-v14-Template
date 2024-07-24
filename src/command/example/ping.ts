@@ -1,9 +1,14 @@
 import { EmbedBuilder } from 'discord.js';
-import { ExtendedCommand } from '../discord';
+import { ExtendedCommand } from '../../discord';
 
 export default new ExtendedCommand({
-  name: ['ping', '핑'],
-  command: (builder) => builder.setDescription('replies with pong'),
+  name: ['핑'],
+  localization: { ko: '핑', 'en-US': 'ping' },
+  builder: (builder) =>
+    builder.setDescription('퐁을 대답합니다.').setDescriptionLocalizations({
+      ko: '퐁을 대답합니다.',
+      'en-US': 'Answer pong.',
+    }),
   run: async ({ interaction }) => {
     if (!interaction.guild) return;
 
