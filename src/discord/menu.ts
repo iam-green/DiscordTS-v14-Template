@@ -1,4 +1,8 @@
-import { ContextMenuCommandBuilder, ContextMenuCommandType } from 'discord.js';
+import {
+  ContextMenuCommandBuilder,
+  ContextMenuCommandType,
+  LocalizationMap,
+} from 'discord.js';
 import { ExtendedInteraction } from './command';
 import { glob } from 'glob';
 import { Log } from '../module';
@@ -10,7 +14,8 @@ interface RunOptions {
 }
 
 export interface MenuType {
-  name: string[];
+  name: string | string[];
+  localization?: LocalizationMap | LocalizationMap[];
   type: ContextMenuCommandType;
   guildId?: string[];
   run: (options: RunOptions) => any;
@@ -64,11 +69,19 @@ export class Menu {
   static async getMenuJSON() {
     return (await this.getMenus())
       .map((v) =>
-        v.menu.name.map((name) =>
-          new ContextMenuCommandBuilder()
-            .setName(name)
-            .setType(v.menu.type)
-            .toJSON(),
+        (Array.isArray(v.menu.name) ? v.menu.name : [v.menu.name]).map(
+          (name, i) => {
+            const localization = v.menu.localization
+              ? Array.isArray(v.menu.localization)
+                ? v.menu.localization
+                : [v.menu.localization]
+              : null;
+            const builder = new ContextMenuCommandBuilder()
+              .setName(name)
+              .setType(v.menu.type);
+            if (localization) builder.setNameLocalizations(localization[i]);
+            return builder.toJSON();
+          },
         ),
       )
       .flat();
@@ -80,11 +93,17 @@ export class Menu {
     Object.entries(guildMenus).forEach(
       ([k, v]) =>
         (result[k] = v.map((v) =>
-          v.menu.name.map((name) =>
-            new ContextMenuCommandBuilder()
-              .setName(name)
-              .setType(v.menu.type)
-              .toJSON(),
+          (Array.isArray(v.menu.name) ? v.menu.name : [v.menu.name]).map(
+            (name, i) => {
+              const localization = Array.isArray(v.menu.localization)
+                ? v.menu.localization[i]
+                : v.menu.localization;
+              const builder = new ContextMenuCommandBuilder()
+                .setName(name)
+                .setType(v.menu.type);
+              if (localization) builder.setNameLocalizations(localization[i]);
+              return builder.toJSON();
+            },
           ),
         )),
     );
@@ -93,7 +112,7 @@ export class Menu {
 
   static async logMenus() {
     for (const { path, menu } of await this.getMenus())
-      for (const name of menu.name)
+      for (const name of Array.isArray(menu.name) ? menu.name : [menu.name])
         Log.debug(
           `Added ${name.green} Context Menu (Location : ${path.yellow})`,
         );
@@ -101,7 +120,7 @@ export class Menu {
     for (const { path, menu } of Object.values(
       await this.getGuildMenus(),
     ).flat())
-      for (const name of menu.name)
+      for (const name of Array.isArray(menu.name) ? menu.name : [menu.name])
         for (const guild_id of menu.guildId || [])
           Log.debug(
             `Added ${name.green} Context Menu for ${guild_id.blue} Guild (Location : ${path.yellow})`,

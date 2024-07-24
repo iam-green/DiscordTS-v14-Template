@@ -2,7 +2,8 @@ import { ApplicationCommandType } from 'discord.js';
 import { ExtendedMenu } from '../discord';
 
 export default new ExtendedMenu({
-  name: ['ping', '핑'],
+  name: 'ping',
+  localization: { ko: '핑', 'en-US': 'ping' },
   type: ApplicationCommandType.Message,
   run: async ({ interaction }) => {
     await interaction.deferReply({ ephemeral: true });
