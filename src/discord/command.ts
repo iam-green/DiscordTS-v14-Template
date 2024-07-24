@@ -148,7 +148,7 @@ export class Command {
       const localizationLength = Array.isArray(command.command.localization)
         ? command.command.localization.length
         : 1;
-      if (nameLength != localizationLength)
+      if (command.command.localization && nameLength != localizationLength)
         throw new Error(
           'The Command Name length is different from the Localization length.',
         );
