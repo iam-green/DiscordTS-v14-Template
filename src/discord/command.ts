@@ -98,7 +98,7 @@ export class Command {
     return sorted ? this.guildCommandsSorted : this.guildCommands;
   }
 
-  static getCommandaLocalization(command: CommandType, length: number) {
+  static getCommandLocalization(command: CommandType, length: number) {
     if (!command.localization) return null;
     const result: LocalizationMap = {};
     Object.keys(command.localization).forEach((key) => {
@@ -117,7 +117,7 @@ export class Command {
         ? new SlashCommandBuilder()
         : new SlashCommandSubcommandBuilder()
     ).setName(name);
-    const localization = this.getCommandaLocalization(command.command, length);
+    const localization = this.getCommandLocalization(command.command, length);
     if (localization) builder.setNameLocalizations(localization);
     return command.command.builder(builder);
   }
@@ -133,7 +133,7 @@ export class Command {
         if (nameList.length == 3 && !resultObject[nameList[0]][nameList[1]])
           resultObject[nameList[0]][nameList[1]] = {};
         if (nameList.length <= 2)
-          localization[nameList[0]] = this.getCommandaLocalization(
+          localization[nameList[0]] = this.getCommandLocalization(
             command.command,
             0,
           );
@@ -151,7 +151,7 @@ export class Command {
           );
         else {
           localization[`${nameList[0]} ${nameList[1]}`] =
-            this.getCommandaLocalization(command.command, 1);
+            this.getCommandLocalization(command.command, 1);
           resultObject[nameList[0]][nameList[1]][nameList[2]] =
             this._setConvertedCommand(command, nameList[2], 2);
         }
