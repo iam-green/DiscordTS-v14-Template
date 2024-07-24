@@ -21,8 +21,8 @@ interface RunOptions {
 }
 
 export type CommandType = {
-  name: string[];
-  localization?: LocalizationMap;
+  name: string | string[];
+  localization?: LocalizationMap | LocalizationMap[];
   builder: (
     builder: SlashCommandBuilder | SlashCommandSubcommandBuilder,
   ) => any;
@@ -98,11 +98,23 @@ export class Command {
     return sorted ? this.guildCommandsSorted : this.guildCommands;
   }
 
-  static getCommandLocalization(command: CommandType, length: number) {
+  static getCommandLocalization(
+    command: CommandType,
+    name: string,
+    length: number,
+  ) {
     if (!command.localization) return null;
+    const localization = Array.isArray(command.localization)
+      ? command.localization
+      : [command.localization];
+    const nameList = Array.isArray(command.name)
+      ? command.name
+      : [command.name];
     const result: LocalizationMap = {};
-    Object.keys(command.localization).forEach((key) => {
-      result[key] = command.localization![key].split(' ')[length] || '';
+    const nameIdx = nameList.findIndex((v) => v.split(' ')[length] == name);
+    if (nameIdx < 0) return null;
+    Object.keys(localization[nameIdx]).forEach((key) => {
+      result[key] = localization[nameIdx][key].split(' ')[length] || '';
     });
     return result;
   }
@@ -117,7 +129,11 @@ export class Command {
         ? new SlashCommandBuilder()
         : new SlashCommandSubcommandBuilder()
     ).setName(name);
-    const localization = this.getCommandLocalization(command.command, length);
+    const localization = this.getCommandLocalization(
+      command.command,
+      name,
+      length,
+    );
     if (localization) builder.setNameLocalizations(localization);
     return command.command.builder(builder);
   }
@@ -125,8 +141,20 @@ export class Command {
   static convertCommand(commands: CommandInfo[]) {
     const resultObject: CommandBuilder = {};
     const localization: CommandBuilderLocalization = {};
-    for (const command of commands)
-      for (const name of command.command.name) {
+    for (const command of commands) {
+      const nameLength = Array.isArray(command.command.name)
+        ? command.command.name.length
+        : 1;
+      const localizationLength = Array.isArray(command.command.localization)
+        ? command.command.localization.length
+        : 1;
+      if (nameLength != localizationLength)
+        throw new Error(
+          'The Command Name length is different from the Localization length.',
+        );
+      for (const name of Array.isArray(command.command.name)
+        ? command.command.name
+        : [command.command.name]) {
         const nameList = name.split(' ');
         if (nameList.length == 2 && !resultObject[nameList[0]])
           resultObject[nameList[0]] = {};
@@ -135,6 +163,7 @@ export class Command {
         if (nameList.length <= 2)
           localization[nameList[0]] = this.getCommandLocalization(
             command.command,
+            nameList[0],
             0,
           );
         if (nameList.length == 1)
@@ -151,11 +180,12 @@ export class Command {
           );
         else {
           localization[`${nameList[0]} ${nameList[1]}`] =
-            this.getCommandLocalization(command.command, 1);
+            this.getCommandLocalization(command.command, nameList[1], 1);
           resultObject[nameList[0]][nameList[1]][nameList[2]] =
             this._setConvertedCommand(command, nameList[2], 2);
         }
       }
+    }
 
     const result: SlashCommandBuilder[] = [];
     for (const [key1, value1] of Object.entries(resultObject))
@@ -188,13 +218,17 @@ export class Command {
       [x: string]: CommandInfo[];
     };
     for (const { path, command } of commands)
-      for (const name of command.name)
+      for (const name of Array.isArray(command.name)
+        ? command.name
+        : [command.name])
         Log.debug(`Added ${name.green} Command (Location : ${path.yellow})`);
 
     for (const { path, command } of Object.keys(guildCommands)
       .map((v) => guildCommands[v])
       .flat())
-      for (const name of command.name)
+      for (const name of Array.isArray(command.name)
+        ? command.name
+        : [command.name])
         for (const guild_id of command.guildId || [])
           Log.debug(
             `Added ${name.green} Command for ${guild_id.blue} Guild (Location : ${path.yellow})`,

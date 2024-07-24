@@ -1,7 +1,7 @@
 import { ExtendedCommand } from '../../discord';
 
 export default new ExtendedCommand({
-  name: ['테스트 서브커맨드'],
+  name: '테스트 서브커맨드',
   localization: { ko: '테스트 서브커맨드', 'en-US': 'test subcommand' },
   builder: (builder) =>
     builder
