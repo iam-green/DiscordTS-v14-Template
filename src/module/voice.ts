@@ -86,6 +86,9 @@ export class Voice {
           await (() => new Promise((resolve) => setTimeout(resolve)))();
           if (voice.repeat) voice.queue.push(voice.queue[0]);
           voice.queue.shift();
+          voice.queue.sort(
+            (a, b) => +(a.date || new Date(0)) - +(b.date || new Date(0)),
+          );
           if (voice.queue.length > 0) this.subscribe(voice, option);
           voice.adding = false;
         }

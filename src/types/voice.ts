@@ -15,6 +15,7 @@ export interface VoiceInfo {
 
 export interface VoiceQueueInfo {
   voice: () => string | internal.Readable | Promise<string | internal.Readable>;
+  date?: Date;
   volume?: number;
   info?: any;
 }
