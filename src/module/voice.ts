@@ -24,7 +24,7 @@ export class Voice {
     );
   }
 
-  static join(guild: Guild, voice: VoiceState) {
+  static async join(guild: Guild, voice: VoiceState) {
     if (!guild || !voice.channel) return;
     const connection = joinVoiceChannel({
       channelId: voice.channel.id,
@@ -39,6 +39,7 @@ export class Voice {
       repeat: false,
       adding: false,
     });
+    await new Promise((resolve) => setTimeout(resolve, 175));
   }
 
   static async subscribe(voice: VoiceInfo, option: VoiceQueueInfo) {
