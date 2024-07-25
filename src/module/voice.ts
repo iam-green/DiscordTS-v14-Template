@@ -80,6 +80,7 @@ export class Voice {
         return await this.subscribe(voice, option);
       });
       voice.player?.on(AudioPlayerStatus.Idle, async () => {
+        if (audioPlayerStatus.restarting) return;
         audioPlayerStatus.attempt = 1;
         if (!voice.adding) {
           voice.adding = true;
