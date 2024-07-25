@@ -24,6 +24,5 @@ export class Cluster {
       },
     );
     await this.manager.spawn({ timeout: -1 });
-    setInterval(() => this.manager?.respawnAll(), 1000 * 60 * 60);
   }
 }
