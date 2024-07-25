@@ -30,6 +30,7 @@ export class ExtendedClient extends Client {
     await this.addCommands();
     await this.addMenus();
     await this.addEvents();
+    await this.addOtherEvents();
   }
 
   async addCommands() {
@@ -89,5 +90,26 @@ export class ExtendedClient extends Client {
           Log.error(e, event.path);
         }
       });
+  }
+
+  async addOtherEvents() {
+    this.on('shardReady', (id) =>
+      Log.info(
+        `${'['.cyan}Cluster ${`#${this.cluster.id}`.green}${']'.cyan} Shard ${`#${id}`.green} is ready!`
+          .green,
+      ),
+    );
+    this.on('shardDisconnect', (_, id) =>
+      Log.warn(
+        `${'['.cyan}Cluster ${`#${this.cluster.id}`.green}${']'.cyan} Shard ${`#${id}`.green} is disconnected.`
+          .yellow,
+      ),
+    );
+    this.on('shardReconnecting', (id) =>
+      Log.warn(
+        `${'['.cyan}Cluster ${`#${this.cluster.id}`.green}${']'.cyan} Shard ${`#${id}`.green} is reconnecting...`
+          .yellow,
+      ),
+    );
   }
 }
