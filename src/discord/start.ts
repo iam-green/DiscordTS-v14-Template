@@ -25,6 +25,8 @@ const client = new ExtendedClient({
 });
 
 (async () => {
-  await databaseInit(`${'['.cyan}Cluster ${`#${getInfo().CLUSTER}`.green}`);
+  await databaseInit(
+    `${'['.cyan}Cluster ${`#${getInfo().CLUSTER}`.green}${']'.cyan}`,
+  );
   await client.start();
 })();
