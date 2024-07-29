@@ -3,17 +3,17 @@ import { db } from '..';
 import { user } from '../schema';
 import {
   FindUserDto,
-  FindUserValidate,
   CreateUserDto,
-  CreateUserValidate,
   UpdateUserDto,
-  UpdateUserValidate,
+  defaultFindOption,
 } from '../types';
 
 export class UserService {
   static async find(data: FindUserDto) {
-    const { id, created, sort, page, count, from, to } =
-      FindUserValidate.parse(data);
+    const { id, created, sort, page, count, from, to } = {
+      ...defaultFindOption(),
+      ...data,
+    };
     return await db.query.user.findMany({
       where: and(
         id ? eq(user.id, id) : undefined,
@@ -32,18 +32,12 @@ export class UserService {
   }
 
   static async create(data: CreateUserDto) {
-    await db.insert(user).values({
-      ...(await CreateUserValidate.parseAsync(data)),
-      created: new Date(),
-    });
+    await db.insert(user).values({ ...data, created: new Date() });
     return this.get(data.id);
   }
 
   static async update(id: string, data: UpdateUserDto) {
-    await db
-      .update(user)
-      .set(UpdateUserValidate.parse(data))
-      .where(eq(user.id, id));
+    await db.update(user).set(data).where(eq(user.id, id));
     return this.get(id);
   }
 

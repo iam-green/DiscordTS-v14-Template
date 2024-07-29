@@ -2,18 +2,18 @@ import { and, asc, between, desc, eq } from 'drizzle-orm';
 import { db } from '..';
 import {
   FindGuildDto,
-  FindGuildValidate,
   CreateGuildDto,
-  CreateGuildValidate,
   UpdateGuildDto,
-  UpdateGuildValidate,
+  defaultFindOption,
 } from '../types';
 import { guild } from '../schema';
 
 export class GuildService {
   static async find(data: FindGuildDto) {
-    const { id, created, sort, page, count, from, to } =
-      FindGuildValidate.parse(data);
+    const { id, created, sort, page, count, from, to } = {
+      ...defaultFindOption(),
+      ...data,
+    };
     return await db.query.guild.findMany({
       where: and(
         id ? eq(guild.id, id) : undefined,
@@ -32,18 +32,12 @@ export class GuildService {
   }
 
   static async create(data: CreateGuildDto) {
-    await db.insert(guild).values({
-      ...(await CreateGuildValidate.parseAsync(data)),
-      created: new Date(),
-    });
+    await db.insert(guild).values({ ...data, created: new Date() });
     return this.get(data.id);
   }
 
   static async update(id: string, data: UpdateGuildDto) {
-    await db
-      .update(guild)
-      .set(UpdateGuildValidate.parse(data))
-      .where(eq(guild.id, id));
+    await db.update(guild).set(data).where(eq(guild.id, id));
     return this.get(id);
   }
 
