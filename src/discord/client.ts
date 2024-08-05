@@ -10,6 +10,7 @@ import { Command, ExtendedInteraction, Menu } from '.';
 import { Log } from '../module/log';
 import { Event } from './event';
 import { ClusterClient } from 'discord-hybrid-sharding';
+import { KoreanBots } from '../module';
 
 export class ExtendedClient extends Client {
   cluster = new ClusterClient(this);
@@ -24,13 +25,21 @@ export class ExtendedClient extends Client {
     Log.info(
       `${'['.cyan}Cluster ${`#${this.cluster.id}`.green}${']'.cyan} Logged in as ${this.user?.tag.green}!`,
     );
+    if (this.cluster.id == 0) {
+      await KoreanBots.init();
+      setInterval(
+        async () => await KoreanBots.update(this.cluster),
+        1000 * 60 * 10,
+      );
+    }
   }
 
   async registerModules() {
-    await this.addCommands();
-    await this.addMenus();
-    await this.addEvents();
-    await this.addOtherEvents();
+    this.on('shardReady', async () => {
+      await this.addCommands();
+      await this.addMenus();
+      await this.addEvents();
+    });
   }
 
   async addCommands() {
@@ -90,26 +99,5 @@ export class ExtendedClient extends Client {
           Log.error(e, event.path);
         }
       });
-  }
-
-  async addOtherEvents() {
-    this.on('shardReady', (id) =>
-      Log.info(
-        `${'['.cyan}Cluster ${`#${this.cluster.id}`.green}${']'.cyan} Shard ${`#${id}`.green} is ready!`
-          .green,
-      ),
-    );
-    this.on('shardDisconnect', (_, id) =>
-      Log.warn(
-        `${'['.cyan}Cluster ${`#${this.cluster.id}`.green}${']'.cyan} Shard ${`#${id}`.green} is disconnected.`
-          .yellow,
-      ),
-    );
-    this.on('shardReconnecting', (id) =>
-      Log.warn(
-        `${'['.cyan}Cluster ${`#${this.cluster.id}`.green}${']'.cyan} Shard ${`#${id}`.green} is reconnecting...`
-          .yellow,
-      ),
-    );
   }
 }

@@ -1,6 +1,7 @@
 import { Koreanbots } from 'koreanbots';
 import { Log } from './log';
-import { Cluster, DiscordUtil } from '../discord';
+import { DiscordUtil, ExtendedClient } from '../discord';
+import { ClusterClient, ClusterManager } from 'discord-hybrid-sharding';
 
 export class KoreanBots {
   static bot?: Koreanbots;
@@ -13,17 +14,18 @@ export class KoreanBots {
     });
   }
 
-  static async update() {
+  static async update(cluster: ClusterManager | ClusterClient<ExtendedClient>) {
     try {
       if (!process.env.KOREANBOTS_TOKEN) return;
       const servers = (
-        (await Cluster.manager?.fetchClientValues(
-          'guilds.cache.size',
-        )) as number[]
+        (await cluster?.fetchClientValues('guilds.cache.size')) as number[]
       ).reduce((a, b) => a + b, 0);
       await this.bot?.mybot.update({
         servers,
-        shards: Cluster.manager?.totalShards,
+        shards:
+          cluster instanceof ClusterClient
+            ? cluster.count
+            : cluster.clusters.size,
       });
     } catch (e) {
       Log.error(e, __filename);
