@@ -11,6 +11,7 @@ export interface VoiceInfo {
   volume?: number;
   repeat: boolean;
   adding: boolean;
+  voiceStatus: { attempt: number; restarting: boolean };
 }
 
 export interface VoiceQueueInfo {
