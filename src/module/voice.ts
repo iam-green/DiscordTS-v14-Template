@@ -14,8 +14,6 @@ export class Voice {
   static list: VoiceInfo[] = [];
 
   static findInfo(id?: string) {
-    const connection = getVoiceConnection(id || '');
-    if (!connection) this.removeInfo(id);
     return this.list.find((v) => v.guild_id == id);
   }
 
@@ -27,6 +25,7 @@ export class Voice {
   }
 
   static async join(guild: Guild, voice: VoiceState) {
+    if (!getVoiceConnection(guild.id)) this.removeInfo(guild.id);
     if (!guild || !voice.channel) return;
     const connection = joinVoiceChannel({
       channelId: voice.channel.id,
