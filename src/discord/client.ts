@@ -46,6 +46,8 @@ export class ExtendedClient extends Client {
     const commands = await Command.getAllCommands();
     this.on(Events.InteractionCreate, (interaction) => {
       if (
+        !interaction ||
+        !interaction.isCommand() ||
         interaction.type != InteractionType.ApplicationCommand ||
         interaction.commandType != ApplicationCommandType.ChatInput
       )
@@ -74,7 +76,7 @@ export class ExtendedClient extends Client {
   async addMenus() {
     const menus = await Menu.getAllMenus();
     this.on(Events.InteractionCreate, (interaction) => {
-      if (!interaction.isContextMenuCommand()) return;
+      if (!interaction || !interaction.isContextMenuCommand()) return;
       const menu = menus.find((v) =>
         v.menu.name.includes(interaction.commandName),
       );

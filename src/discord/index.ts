@@ -1,4 +1,3 @@
-import { KoreanBots } from '../module';
 import { Cluster } from './cluster';
 import { Command } from './command';
 import { Event } from './event';
@@ -20,6 +19,4 @@ export const discordInit = async () => {
   await Event.logEvents();
 
   await Cluster.spawn();
-  await KoreanBots.init();
-  setInterval(async () => KoreanBots.update(), 1000 * 60 * 10);
 };
