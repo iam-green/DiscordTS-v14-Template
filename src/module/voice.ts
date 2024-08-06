@@ -6,6 +6,7 @@ import {
   AudioPlayerStatus,
   VoiceConnectionStatus,
   NoSubscriberBehavior,
+  getVoiceConnection,
 } from '@discordjs/voice';
 import { VoiceInfo, VoiceQueueInfo } from '../types';
 import { Log } from './log';
@@ -39,7 +40,7 @@ export class Voice {
       repeat: false,
       adding: false,
     });
-    await new Promise((resolve) => setTimeout(resolve, 175));
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
   static async subscribe(voice: VoiceInfo, option: VoiceQueueInfo) {
@@ -142,13 +143,12 @@ export class Voice {
   }
 
   static quit(guild: Guild) {
-    const voice = this.findInfo(guild?.id);
+    const voice = this.findInfo(guild.id);
     if (!voice) return;
-    try {
-      voice.queue = [];
-      voice.player?.stop();
-    } catch (e) {}
-    voice.connection.destroy();
-    this.removeInfo(guild?.id);
+    voice.queue = [];
+    voice.player?.stop();
+    const connection = getVoiceConnection(guild.id);
+    if (connection) connection.destroy();
+    this.removeInfo(guild.id);
   }
 }
