@@ -35,10 +35,14 @@ export class ExtendedClient extends Client {
   }
 
   async registerModules() {
-    this.on('shardReady', async () => {
+    this.on('shardReady', async (id) => {
       await this.addCommands();
       await this.addMenus();
       await this.addEvents();
+      Log.info(
+        `${'['.cyan}Cluster ${`#${this.cluster.id}`.green}${']'.cyan} Shard ${`#${id}`.green} is ready!`
+          .green,
+      );
     });
   }
 
