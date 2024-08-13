@@ -1,5 +1,7 @@
+import chalk from 'chalk';
+
 export class Log {
-  static _date() {
+  static date() {
     const date = new Date();
     const year = date.getFullYear().toString().padStart(4, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -10,36 +12,34 @@ export class Log {
     return `${year}/${month}/${day} ${hour}:${minute}:${second}`;
   }
 
+  static prefix(type: string, color: (str: string) => string) {
+    return `${chalk.cyan('[')}${color(type)}${chalk.cyan(']')} ${chalk.cyan('(')}${chalk.yellow(this.date())}${chalk.cyan(')')}`;
+  }
+
   static info(content: string) {
-    console.log(
-      `${'['.cyan}${'INFO'.green}${']'.cyan} ${'('.cyan}${this._date().yellow}${')'.cyan} ${content}`,
-    );
+    console.log(`${this.prefix('INFO', chalk.green)} ${content}`);
   }
 
   static debug(content: string) {
     if (process.env.NODE_ENV == 'development')
-      console.log(
-        `${'['.cyan}${'DEBUG'.magenta}${']'.cyan} ${'('.cyan}${this._date().yellow}${')'.cyan} ${content}`,
-      );
+      console.log(`${this.prefix('DEBUG', chalk.magenta)} ${content}`);
   }
 
   static warn(content: string) {
-    console.log(
-      `${'['.cyan}${'WARN'.yellow}${']'.cyan} ${'('.cyan}${this._date().yellow}${')'.cyan} ${content}`,
-    );
+    console.log(`${this.prefix('WARN', chalk.yellow)} ${content}`);
   }
 
   static error(error, file?: string) {
     console.log(
-      `${'['.cyan}${'ERROR'.red}${']'.cyan} ${'('.cyan}${this._date().yellow}${')'.cyan} ${
+      `${this.prefix('ERROR', chalk.red)} ${chalk.red(
         typeof error == 'string'
-          ? error.red
+          ? error
           : [
               `${error.name} - ${error.message}`,
               `File : ${file || error.fileName}`,
               `Stack : ${error.stack.replace(/\n/g, '\n\t')}`,
-            ].join('\n\t').red
-      }`,
+            ].join('\n\t'),
+      )}`,
     );
   }
 }

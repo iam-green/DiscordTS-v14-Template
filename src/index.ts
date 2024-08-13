@@ -1,10 +1,9 @@
-import { databaseInit } from './database';
-import { discordInit } from './discord';
 import 'dotenv/config';
 import 'colors';
+import { databaseInit } from './database';
 
 async function bootstrap() {
   await databaseInit();
-  await discordInit();
+  // Input Code Here
 }
 bootstrap();
