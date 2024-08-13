@@ -17,29 +17,44 @@ export class Log {
   }
 
   static info(content: string) {
-    console.log(`${this.prefix('INFO', chalk.green)} ${content}`);
+    console.log(
+      `${this.prefix('INFO', chalk.green)} ${content.replace(/\n/g, '\n\t')}`,
+    );
   }
 
   static debug(content: string) {
     if (process.env.NODE_ENV == 'development')
-      console.log(`${this.prefix('DEBUG', chalk.magenta)} ${content}`);
+      console.log(
+        `${this.prefix('DEBUG', chalk.magenta)} ${content.replace(/\n/g, '\n\t')}`,
+      );
   }
 
   static warn(content: string) {
-    console.log(`${this.prefix('WARN', chalk.yellow)} ${content}`);
+    if (
+      process.env.NODE_ENV == 'development' ||
+      process.env.SHOW_WARN == 'true'
+    )
+      console.log(
+        `${this.prefix('WARN', chalk.yellow)} ${content.replace(
+          /\n/g,
+          '\n\t',
+        )}`,
+      );
   }
 
   static error(error, file?: string) {
     console.log(
-      `${this.prefix('ERROR', chalk.red)} ${chalk.red(
-        typeof error == 'string'
-          ? error
-          : [
-              `${error.name} - ${error.message}`,
-              `File : ${file || error.fileName}`,
-              `Stack : ${error.stack.replace(/\n/g, '\n\t')}`,
-            ].join('\n\t'),
-      )}`,
+      `${this.prefix('ERROR', chalk.red)} ${chalk
+        .red(
+          typeof error == 'string'
+            ? error
+            : [
+                `${error.name} - ${error.message}`,
+                `File : ${file || error.fileName}`,
+                `Stack : ${error.stack}`,
+              ].join('\n'),
+        )
+        .replace(/\n/g, '\n\t')}`,
     );
   }
 }

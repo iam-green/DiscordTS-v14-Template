@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import 'colors';
 import { databaseInit } from './database';
 
 async function bootstrap() {
