@@ -1,7 +1,6 @@
 import { Locale, LocaleString } from 'discord.js';
 import { glob } from 'glob';
-
-export interface LanguageData {}
+import { LanguageData } from '../language/type';
 
 export class Language {
   private static data: Partial<Record<LocaleString, LanguageData>> = {};
@@ -9,7 +8,9 @@ export class Language {
   private static async init() {
     const locales = glob
       .sync(`${__dirname.replace(/\\/g, '/')}/../language/*.json`)
-      .map((v) => v.split('language/')[1].split('.json')[0]);
+      .map(
+        (v) => v.replace(/\\/g, '/').split('language/')[1].split('.json')[0],
+      );
     const localeList = Object.values(Locale).map((v) => v.toString());
     for (const locale of locales)
       if (localeList.includes(locale))
