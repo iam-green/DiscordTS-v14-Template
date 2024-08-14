@@ -1,4 +1,9 @@
-import { REST, Routes } from 'discord.js';
+import {
+  PermissionFlagsBits,
+  PermissionResolvable,
+  REST,
+  Routes,
+} from 'discord.js';
 
 export class DiscordUtil {
   private static expire = 0;
@@ -37,5 +42,17 @@ export class DiscordUtil {
   static async developerId() {
     if (this.expire < Date.now()) await this.getValues();
     return this.developer_id;
+  }
+
+  static permission(
+    value: PermissionResolvable,
+  ): keyof typeof PermissionFlagsBits | null {
+    if (typeof value != 'bigint' && !/^-?\d+$/.test(value.toString()))
+      return value as keyof typeof PermissionFlagsBits;
+    return (
+      (Object.entries(PermissionFlagsBits).find(
+        ([, v]) => v == value,
+      )?.[0] as keyof typeof PermissionFlagsBits) ?? null
+    );
   }
 }
