@@ -46,5 +46,15 @@
   "Permission_CreateEvents": "이벤트 생성 및 관리",
   "Permission_UseExternalSounds": "외부 사운드보드 사용",
   "Permission_SendVoiceMessages": "음성 메시지 보내기",
-  "Permission_SendPolls": "투표 만들기"
+  "Permission_SendPolls": "투표 만들기",
+  "Embed_Warn_CommandCooldown_Title": ":warning: 명령어 쿨다운",
+  "Embed_Warn_CommandCooldown_Description": "이 명령어는 {0}초 뒤에 다시 사용할 수 있습니다.",
+  "Embed_Warn_UserRequirePermission_Title": ":warning: 유저 권한 없음",
+  "Embed_Warn_UserRequirePermission_Description": "이 명령어를 사용하려면 {0} 권한이 필요합니다.",
+  "Embed_Warn_BotRequirePermission_Title": ":warning: 봇 권한 없음",
+  "Embed_Warn_BotRequirePermission_Description": "봇에게 {0} 권한이 없어 이 명령어를 사용할 수 없습니다.",
+  "Embed_Warn_OnlyBotAdminCanUse_Title": ":warning: 봇 관리자만 사용 가능",
+  "Embed_Warn_OnlyBotAdminCanUse_Description": "이 명령어는 봇 관리자만 사용할 수 있습니다.",
+  "Embed_Warn_OnlyGuildOwnerCanUse_Title": ":warning: 서버 소유자만 사용 가능",
+  "Embed_Warn_OnlyGuildOwnerCanUse_Description": "이 명령어는 서버 소유자만 사용할 수 있습니다."
 }

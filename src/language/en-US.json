@@ -46,5 +46,15 @@
   "Permission_CreateEvents": "Create Events",
   "Permission_UseExternalSounds": "Use External Sounds",
   "Permission_SendVoiceMessages": "Send Voice Messages",
-  "Permission_SendPolls": "Create Polls"
+  "Permission_SendPolls": "Create Polls",
+  "Embed_Warn_CommandCooldown_Title": ":warning: Command Cooldown",
+  "Embed_Warn_CommandCooldown_Description": "You can use this command again after {0} seconds.",
+  "Embed_Warn_UserRequirePermission_Title": ":warning: No User Permission",
+  "Embed_Warn_UserRequirePermission_Description": "You need the {0} permission to use this command.",
+  "Embed_Warn_BotRequirePermission_Title": ":warning: No Bot Permission",
+  "Embed_Warn_BotRequirePermission_Description": "The bot don't have {0} permission, this command cannot be used.",
+  "Embed_Warn_OnlyBotAdminCanUse_Title": ":warning: Only Bot Admin Can Use",
+  "Embed_Warn_OnlyBotAdminCanUse_Description": "This command can only be used by the bot administrator.",
+  "Embed_Warn_OnlyGuildOwnerCanUse_Title": ":warning: Only Guild Owner Can Use",
+  "Embed_Warn_OnlyGuildOwnerCanUse_Description": "This command can only be used by the server owner."
 }
