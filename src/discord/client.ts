@@ -13,6 +13,7 @@ import { DiscordUtil } from './util';
 import { Language, LanguageData } from './language';
 import { EmbedConfig } from '../config';
 import chalk from 'chalk';
+import { Menu } from './menu';
 
 export class ExtendedClient extends Client {
   cluster = new ClusterClient(this);
@@ -35,6 +36,7 @@ export class ExtendedClient extends Client {
   private async registerModules() {
     await this.addCommands();
     await this.addEvents();
+    await this.addMenus();
     this.on('shardReady', async (id) =>
       Log.info(`${this.prefix} Shard ${chalk.green(`#${id}`)} is ready!`),
     );
@@ -124,90 +126,93 @@ export class ExtendedClient extends Client {
           now + command.options.cooldown;
       }
 
-      // Check Bot Permission
-      const botPermission = DiscordUtil.checkPermission(
-        interaction.guild?.members.me?.permissions,
-        command.permission?.bot ?? [],
-      );
-      if (!botPermission.status)
-        return interaction
-          .reply({
-            embeds: [
-              new EmbedBuilder()
-                .setTitle(
-                  Language.get(
-                    interaction.locale,
-                    'Embed_Warn_BotRequirePermission_Title',
-                  ),
-                )
-                .setDescription(
-                  Language.get(
-                    interaction.locale,
-                    'Embed_Warn_BotRequirePermission_Description',
-                    `\`${botPermission?.require_permission
-                      ?.map((v) => {
-                        const permission =
-                          DiscordUtil.convertPermissionToString(v);
-                        return Language.get(
-                          interaction.locale,
-                          `Permission_${permission}` as keyof LanguageData,
-                        );
-                      })
-                      ?.join('`, `')}\``,
-                  ),
-                )
-                .setColor(EmbedConfig.WARN_COLOR)
-                .setFooter({
-                  text: interaction.user.tag,
-                  iconURL: interaction.user.avatarURL() || undefined,
-                })
-                .setTimestamp(),
-            ],
-            ephemeral: true,
-          })
-          .catch(() => {});
+      if (interaction.guild) {
+        // Check Bot Permission
+        const botPermission = DiscordUtil.checkPermission(
+          interaction.guild.members.me?.permissions,
+          command.permission?.bot ?? [],
+        );
+        if (!botPermission.status)
+          return interaction
+            .reply({
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle(
+                    Language.get(
+                      interaction.locale,
+                      'Embed_Warn_BotRequirePermission_Title',
+                    ),
+                  )
+                  .setDescription(
+                    Language.get(
+                      interaction.locale,
+                      'Embed_Warn_BotRequirePermission_Description',
+                      `\`${botPermission?.require_permission
+                        ?.map((v) => {
+                          const permission =
+                            DiscordUtil.convertPermissionToString(v);
+                          return Language.get(
+                            interaction.locale,
+                            `Permission_${permission}` as keyof LanguageData,
+                          );
+                        })
+                        ?.join('`, `')}\``,
+                    ),
+                  )
+                  .setColor(EmbedConfig.WARN_COLOR)
+                  .setFooter({
+                    text: interaction.user.tag,
+                    iconURL: interaction.user.avatarURL() || undefined,
+                  })
+                  .setTimestamp(),
+              ],
+              ephemeral: true,
+            })
+            .catch(() => {});
 
-      const userPermission = DiscordUtil.checkPermission(
-        interaction.memberPermissions,
-        command.permission?.user ?? [],
-      );
-      if (!userPermission.status)
-        return interaction
-          .reply({
-            embeds: [
-              new EmbedBuilder()
-                .setTitle(
-                  Language.get(
-                    interaction.locale,
-                    'Embed_Warn_UserRequirePermission_Title',
-                  ),
-                )
-                .setDescription(
-                  Language.get(
-                    interaction.locale,
-                    'Embed_Warn_UserRequirePermission_Description',
-                    `\`${userPermission?.require_permission
-                      ?.map((v) => {
-                        const permission =
-                          DiscordUtil.convertPermissionToString(v);
-                        return Language.get(
-                          interaction.locale,
-                          `Permission_${permission}` as keyof LanguageData,
-                        );
-                      })
-                      ?.join('`, `')}\``,
-                  ),
-                )
-                .setColor(EmbedConfig.WARN_COLOR)
-                .setFooter({
-                  text: interaction.user.tag,
-                  iconURL: interaction.user.avatarURL() || undefined,
-                })
-                .setTimestamp(),
-            ],
-            ephemeral: true,
-          })
-          .catch(() => {});
+        // Check User Permission
+        const userPermission = DiscordUtil.checkPermission(
+          interaction.memberPermissions,
+          command.permission?.user ?? [],
+        );
+        if (!userPermission.status)
+          return interaction
+            .reply({
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle(
+                    Language.get(
+                      interaction.locale,
+                      'Embed_Warn_UserRequirePermission_Title',
+                    ),
+                  )
+                  .setDescription(
+                    Language.get(
+                      interaction.locale,
+                      'Embed_Warn_UserRequirePermission_Description',
+                      `\`${userPermission?.require_permission
+                        ?.map((v) => {
+                          const permission =
+                            DiscordUtil.convertPermissionToString(v);
+                          return Language.get(
+                            interaction.locale,
+                            `Permission_${permission}` as keyof LanguageData,
+                          );
+                        })
+                        ?.join('`, `')}\``,
+                    ),
+                  )
+                  .setColor(EmbedConfig.WARN_COLOR)
+                  .setFooter({
+                    text: interaction.user.tag,
+                    iconURL: interaction.user.avatarURL() || undefined,
+                  })
+                  .setTimestamp(),
+              ],
+              ephemeral: true,
+            })
+            .catch(() => {});
+      }
 
       // Check botAdmin, botDeveloper
       if (
@@ -294,5 +299,249 @@ export class ExtendedClient extends Client {
         event.event,
         async (...args) => await event.run(this, ...args),
       );
+  }
+
+  private async addMenus() {
+    const menus = await Menu.getAllMenus();
+    this.on(Events.InteractionCreate, async (interaction) => {
+      if (!interaction.isContextMenuCommand()) return;
+
+      // Find Menu
+      const menu = menus.find((v) =>
+        v.menu.name.includes(interaction.commandName),
+      )?.menu;
+      if (!menu) return;
+
+      // Check Guild Only
+      if (menu.options?.onlyGuild && !interaction.guild)
+        return await interaction.reply({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle(
+                Language.get(
+                  interaction.locale,
+                  'Embed_Warn_OnlyCanUseInGuild_Title',
+                ),
+              )
+              .setDescription(
+                Language.get(
+                  interaction.locale,
+                  'Embed_Warn_OnlyCanUseInGuild_Description',
+                ),
+              )
+              .setColor(EmbedConfig.WARN_COLOR)
+              .setFooter({
+                text: interaction.user.tag,
+                iconURL: interaction.user.avatarURL() || undefined,
+              })
+              .setTimestamp(),
+          ],
+          ephemeral: true,
+        });
+
+      // Check Cooldown
+      if (menu.options?.cooldown) {
+        const now = Date.now();
+        if (!this.cooldown[interaction.user.id])
+          this.cooldown[interaction.user.id] = {};
+        if (!this.cooldown[interaction.user.id][interaction.commandId])
+          this.cooldown[interaction.user.id][interaction.commandId] = 0;
+        const cooldown =
+          this.cooldown[interaction.user.id][interaction.commandId];
+        if (cooldown > now)
+          return interaction
+            .reply({
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle(
+                    Language.get(
+                      interaction.locale,
+                      'Embed_Warn_CommandCooldown_Title',
+                    ),
+                  )
+                  .setDescription(
+                    Language.get(
+                      interaction.locale,
+                      'Embed_Warn_CommandCooldown_Description',
+                      `\`${Math.round((cooldown - now) / 100) / 10}\``,
+                    ),
+                  )
+                  .setColor(EmbedConfig.WARN_COLOR)
+                  .setFooter({
+                    text: interaction.user.tag,
+                    iconURL: interaction.user.avatarURL() || undefined,
+                  })
+                  .setTimestamp(),
+              ],
+              ephemeral: true,
+            })
+            .catch(() => {});
+        this.cooldown[interaction.user.id][interaction.commandId] =
+          now + menu.options.cooldown;
+      }
+
+      if (interaction.guild) {
+        // Check Bot Permission
+        const botPermission = DiscordUtil.checkPermission(
+          interaction.guild.members.me?.permissions,
+          menu.permission?.bot ?? [],
+        );
+        if (!botPermission.status)
+          return interaction
+            .reply({
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle(
+                    Language.get(
+                      interaction.locale,
+                      'Embed_Warn_BotRequirePermission_Title',
+                    ),
+                  )
+                  .setDescription(
+                    Language.get(
+                      interaction.locale,
+                      'Embed_Warn_BotRequirePermission_Description',
+                      `\`${botPermission?.require_permission
+                        ?.map((v) => {
+                          const permission =
+                            DiscordUtil.convertPermissionToString(v);
+                          return Language.get(
+                            interaction.locale,
+                            `Permission_${permission}` as keyof LanguageData,
+                          );
+                        })
+                        ?.join('`, `')}\``,
+                    ),
+                  )
+                  .setColor(EmbedConfig.WARN_COLOR)
+                  .setFooter({
+                    text: interaction.user.tag,
+                    iconURL: interaction.user.avatarURL() || undefined,
+                  })
+                  .setTimestamp(),
+              ],
+              ephemeral: true,
+            })
+            .catch(() => {});
+
+        // Check User Permission
+        const userPermission = DiscordUtil.checkPermission(
+          interaction.memberPermissions,
+          menu.permission?.user ?? [],
+        );
+        if (!userPermission.status)
+          return interaction
+            .reply({
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle(
+                    Language.get(
+                      interaction.locale,
+                      'Embed_Warn_UserRequirePermission_Title',
+                    ),
+                  )
+                  .setDescription(
+                    Language.get(
+                      interaction.locale,
+                      'Embed_Warn_UserRequirePermission_Description',
+                      `\`${userPermission?.require_permission
+                        ?.map((v) => {
+                          const permission =
+                            DiscordUtil.convertPermissionToString(v);
+                          return Language.get(
+                            interaction.locale,
+                            `Permission_${permission}` as keyof LanguageData,
+                          );
+                        })
+                        ?.join('`, `')}\``,
+                    ),
+                  )
+                  .setColor(EmbedConfig.WARN_COLOR)
+                  .setFooter({
+                    text: interaction.user.tag,
+                    iconURL: interaction.user.avatarURL() || undefined,
+                  })
+                  .setTimestamp(),
+              ],
+              ephemeral: true,
+            })
+            .catch(() => {});
+      }
+
+      // Check botAdmin, botDeveloper
+      if (
+        (menu.options?.botAdmin || menu.options?.botDeveloper) &&
+        ![
+          ...(menu.options?.botAdmin ? await DiscordUtil.adminId() : []),
+          ...(menu.options?.botDeveloper
+            ? await DiscordUtil.developerId()
+            : []),
+        ].includes(interaction.user.id)
+      )
+        return interaction
+          .reply({
+            embeds: [
+              new EmbedBuilder()
+                .setTitle(
+                  Language.get(
+                    interaction.locale,
+                    'Embed_Warn_OnlyBotAdminCanUse_Title',
+                  ),
+                )
+                .setDescription(
+                  Language.get(
+                    interaction.locale,
+                    'Embed_Warn_OnlyBotAdminCanUse_Description',
+                  ),
+                )
+                .setColor(EmbedConfig.WARN_COLOR)
+                .setFooter({
+                  text: interaction.user.tag,
+                  iconURL: interaction.user.avatarURL() || undefined,
+                })
+                .setTimestamp(),
+            ],
+            ephemeral: true,
+          })
+          .catch(() => {});
+
+      // Check guildOwner
+      if (
+        menu.options?.guildOwner &&
+        interaction.guild?.ownerId != interaction.user.id
+      )
+        return interaction
+          .reply({
+            embeds: [
+              new EmbedBuilder()
+                .setTitle(
+                  Language.get(
+                    interaction.locale,
+                    'Embed_Warn_OnlyGuildOwnerCanUse_Title',
+                  ),
+                )
+                .setDescription(
+                  Language.get(
+                    interaction.locale,
+                    'Embed_Warn_OnlyGuildOwnerCanUse_Description',
+                  ),
+                )
+                .setColor(EmbedConfig.WARN_COLOR)
+                .setFooter({
+                  text: interaction.user.tag,
+                  iconURL: interaction.user.avatarURL() || undefined,
+                })
+                .setTimestamp(),
+            ],
+            ephemeral: true,
+          })
+          .catch(() => {});
+
+      // Run Menu
+      await menu.run({
+        client: this,
+        interaction: interaction as ExtendedInteraction,
+      });
+    });
   }
 }
