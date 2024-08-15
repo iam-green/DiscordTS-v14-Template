@@ -9,33 +9,10 @@ export default new ExtendedCommand({
     name: { ko: '정보' },
     description: { ko: '봇 정보를 확인합니다.' },
   },
+  options: { onlyGuild: true },
   run: async ({ interaction, client }) => {
     await interaction.deferReply({ ephemeral: true }).catch(() => {});
     if (!interaction.deferred) return;
-    if (!interaction.guild)
-      return await interaction.editReply({
-        embeds: [
-          new EmbedBuilder()
-            .setTitle(
-              Language.get(
-                interaction.locale,
-                'Embed_Warn_OnlyCanUseInGuild_Title',
-              ),
-            )
-            .setDescription(
-              Language.get(
-                interaction.locale,
-                'Embed_Warn_OnlyCanUseInGuild_Description',
-              ),
-            )
-            .setColor(EmbedConfig.WARN_COLOR)
-            .setFooter({
-              text: interaction.user.tag,
-              iconURL: interaction.user.avatarURL() || undefined,
-            })
-            .setTimestamp(),
-        ],
-      });
 
     const promises = await Promise.all([
       (client.cluster.fetchClientValues('guilds.cache.size') || []) as Promise<
@@ -93,7 +70,7 @@ export default new ExtendedCommand({
                 interaction.locale,
                 'Embed_Info_Shard_Value',
                 client.cluster.info.TOTAL_SHARDS,
-                interaction.guild.shardId + 1,
+                interaction.guild!.shardId + 1,
               ),
             },
           )

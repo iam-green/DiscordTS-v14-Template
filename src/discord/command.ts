@@ -50,6 +50,7 @@ export type CommandType = {
   }>;
   options?: Partial<{
     cooldown: number;
+    onlyGuild: boolean;
     botAdmin: boolean;
     botDeveloper: boolean;
     guildOwner: boolean;

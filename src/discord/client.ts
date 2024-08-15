@@ -56,6 +56,33 @@ export class ExtendedClient extends Client {
       const command = commands.find((c) => c.command.name == name)?.command;
       if (!command) return;
 
+      // Check Guild Only
+      if (command.options?.onlyGuild && !interaction.guild)
+        return await interaction.reply({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle(
+                Language.get(
+                  interaction.locale,
+                  'Embed_Warn_OnlyCanUseInGuild_Title',
+                ),
+              )
+              .setDescription(
+                Language.get(
+                  interaction.locale,
+                  'Embed_Warn_OnlyCanUseInGuild_Description',
+                ),
+              )
+              .setColor(EmbedConfig.WARN_COLOR)
+              .setFooter({
+                text: interaction.user.tag,
+                iconURL: interaction.user.avatarURL() || undefined,
+              })
+              .setTimestamp(),
+          ],
+          ephemeral: true,
+        });
+
       // Check Cooldown
       if (command.options?.cooldown) {
         const now = Date.now();
