@@ -6,13 +6,13 @@ import * as schema from '../database/schema';
 
 const queryClient = new Client(process.env.DATABASE_URL || '');
 
-export const databaseInit = async () => {
+export const databaseInit = async (log?: boolean) => {
   if (process.env.DATABASE_URL) {
     await queryClient.connect();
     await migrate(db, {
       migrationsFolder: `${__dirname.replace(/\\/g, '/')}/migration`,
     });
-    Log.info('Database Connected');
+    if (log) Log.info('Database Connected');
   }
 };
 
