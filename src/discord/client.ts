@@ -44,7 +44,6 @@ export class ExtendedClient extends Client {
     const commands = await Command.getAllCommands();
     this.on(Events.InteractionCreate, async (interaction) => {
       if (!interaction.isChatInputCommand()) return;
-      const delayStart = Date.now();
 
       // Find Command
       const name = [
@@ -244,9 +243,6 @@ export class ExtendedClient extends Client {
             ephemeral: true,
           })
           .catch(() => {});
-
-      // Check Interaction Delay
-      if (Math.abs(interaction.createdTimestamp - delayStart) > 2500) return;
 
       // Run Command
       await command.run({
