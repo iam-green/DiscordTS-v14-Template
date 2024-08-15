@@ -46,13 +46,11 @@ export class DiscordUtil {
 
   static permission(
     value: PermissionResolvable,
-  ): keyof typeof PermissionFlagsBits | null {
+  ): keyof typeof PermissionFlagsBits {
     if (typeof value != 'bigint' && !/^-?\d+$/.test(value.toString()))
       return value as keyof typeof PermissionFlagsBits;
-    return (
-      (Object.entries(PermissionFlagsBits).find(
-        ([, v]) => v == value,
-      )?.[0] as keyof typeof PermissionFlagsBits) ?? null
-    );
+    return Object.entries(PermissionFlagsBits).find(
+      ([, v]) => v == value,
+    )![0] as keyof typeof PermissionFlagsBits;
   }
 }
