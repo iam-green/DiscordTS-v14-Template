@@ -80,7 +80,7 @@ export class ExtendedClient extends Client {
                     Language.get(
                       interaction.locale,
                       'Embed_Warn_CommandCooldown_Description',
-                      `\`${Math.round((cooldown - now) * 10) / 10}\``,
+                      `\`${Math.round((cooldown - now) / 100) / 10}\``,
                     ),
                   )
                   .setColor(EmbedConfig.WARN_COLOR)
