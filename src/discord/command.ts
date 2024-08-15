@@ -56,6 +56,7 @@ export type CommandType = {
     guildOwner: boolean;
   }>;
   run: (options: RunOptions) => any;
+  autoComplete?: (options: Omit<RunOptions, 'args'>) => any;
 };
 
 export type CommandInfo = {

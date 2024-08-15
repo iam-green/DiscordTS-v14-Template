@@ -45,7 +45,8 @@ export class ExtendedClient extends Client {
   private async addCommands() {
     const commands = await Command.getAllCommands();
     this.on(Events.InteractionCreate, async (interaction) => {
-      if (!interaction.isChatInputCommand()) return;
+      if (!interaction.isChatInputCommand() || interaction.isAutocomplete())
+        return;
 
       // Find Command
       const name = [
@@ -57,6 +58,12 @@ export class ExtendedClient extends Client {
         .join(' ');
       const command = commands.find((c) => c.command.name == name)?.command;
       if (!command) return;
+
+      if (interaction.isAutocomplete() && command.autoComplete)
+        return await command.autoComplete({
+          client: this,
+          interaction: interaction as ExtendedInteraction,
+        });
 
       // Check Guild Only
       if (command.options?.onlyGuild && !interaction.guild)
