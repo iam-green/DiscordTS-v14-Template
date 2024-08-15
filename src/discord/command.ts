@@ -2,6 +2,7 @@ import {
   CommandInteraction,
   CommandInteractionOptionResolver,
   GuildMember,
+  LocaleString,
   LocalizationMap,
   PermissionResolvable,
   REST,
@@ -34,8 +35,12 @@ export interface ExtendedInteraction extends CommandInteraction {
 
 export type CommandType = {
   name: string | string[];
-  localization?: LocalizationMap | LocalizationMap[];
-  builder: (
+  description?: string | string[];
+  localization?: Partial<{
+    name: LocalizationMap | LocalizationMap[];
+    description: LocalizationMap | LocalizationMap[];
+  }>;
+  builder?: (
     builder: SlashCommandBuilder | SlashCommandSubcommandBuilder,
   ) => any;
   guildId?: string[];
@@ -67,7 +72,10 @@ export type CommandBuilder = Record<
     >
 >;
 
-export type CommandBuilderLocalization = Record<string, LocalizationMap | null>;
+export type CommandBuilderLocalization = Record<
+  string,
+  Record<Partial<'name' | 'description'>, LocalizationMap> | null
+>;
 
 export class Command {
   private static allCommands: CommandInfo[] = [];
@@ -110,44 +118,83 @@ export class Command {
     return sorted ? this.guildCommandsSorted : this.guildCommands;
   }
 
-  static getCommandLocalization(
+  private static getCommandLocalization(
     command: CommandType,
     name: string,
     length: number,
   ) {
     if (!command.localization) return null;
-    const localization = Array.isArray(command.localization)
-      ? command.localization
-      : [command.localization];
+    const localization: Record<'name' | 'description', LocalizationMap[]> = {
+      name: command.localization.name
+        ? Array.isArray(command.localization.name)
+          ? command.localization.name
+          : [command.localization.name]
+        : [{}],
+      description: command.localization.description
+        ? Array.isArray(command.localization.description)
+          ? command.localization.description
+          : [command.localization.description]
+        : [{}],
+    };
     const nameList = Array.isArray(command.name)
       ? command.name
       : [command.name];
-    const result: LocalizationMap = {};
+    const result: Record<'name' | 'description', LocalizationMap> = {
+      name: {},
+      description: {},
+    };
     const nameIdx = nameList.findIndex((v) => v.split(' ')[length] == name);
-    if (nameIdx < 0) return null;
-    Object.keys(localization[nameIdx]).forEach((key) => {
-      result[key] = localization[nameIdx][key].split(' ')[length] || '';
+    Object.keys(localization.name[nameIdx]).forEach((key) => {
+      result.name[key] =
+        localization.name[nameIdx][key].split(' ')[length] || '';
+      result.description[key] = localization.description[nameIdx][key] || '';
     });
     return result;
   }
 
-  private static _setConvertedCommand(
+  private static setConvertedCommand(
     command: CommandInfo,
     name: string,
     length: number,
   ) {
+    const nameList = Array.isArray(command.command.name)
+      ? command.command.name
+      : [command.command.name];
+    const description = command.command.description
+      ? Array.isArray(command.command.description)
+        ? command.command.description
+        : [command.command.description]
+      : [];
+    const descriptionIdx = nameList.findIndex(
+      (v) => v.split(' ')[length] == name,
+    );
     const builder = (
       length == 0
         ? new SlashCommandBuilder()
         : new SlashCommandSubcommandBuilder()
     ).setName(name);
+    if (descriptionIdx != -1)
+      builder.setDescription(description[descriptionIdx]);
     const localization = this.getCommandLocalization(
       command.command,
       name,
       length,
     );
-    if (localization) builder.setNameLocalizations(localization);
-    return command.command.builder(builder);
+    if (localization?.name)
+      for (const key of Object.keys(localization.name))
+        if (localization.name[key].length > 0)
+          builder.setNameLocalization(
+            key as LocaleString,
+            localization.name[key],
+          );
+    if (localization?.description)
+      for (const key of Object.keys(localization.description))
+        if (localization.description[key].length > 0)
+          builder.setDescriptionLocalization(
+            key as LocaleString,
+            localization.description[key],
+          );
+    return command.command.builder ? command.command.builder(builder) : builder;
   }
 
   static convertCommand(commands: CommandInfo[]) {
@@ -179,13 +226,13 @@ export class Command {
             0,
           );
         if (nameList.length == 1)
-          resultObject[nameList[0]] = this._setConvertedCommand(
+          resultObject[nameList[0]] = this.setConvertedCommand(
             command,
             nameList[0],
             0,
           );
         else if (nameList.length == 2)
-          resultObject[nameList[0]][nameList[1]] = this._setConvertedCommand(
+          resultObject[nameList[0]][nameList[1]] = this.setConvertedCommand(
             command,
             nameList[1],
             1,
@@ -194,7 +241,7 @@ export class Command {
           localization[`${nameList[0]} ${nameList[1]}`] =
             this.getCommandLocalization(command.command, nameList[1], 1);
           resultObject[nameList[0]][nameList[1]][nameList[2]] =
-            this._setConvertedCommand(command, nameList[2], 2);
+            this.setConvertedCommand(command, nameList[2], 2);
         }
       }
     }
@@ -205,7 +252,7 @@ export class Command {
       else {
         const slashCommand = new SlashCommandBuilder()
           .setName(key1)
-          .setNameLocalizations(localization[key1])
+          .setNameLocalizations(localization[key1]?.name || {})
           .setDescription(`'${key1}' SubCommand`);
         for (const [key2, value2] of Object.entries(value1))
           if (value2 instanceof SlashCommandSubcommandBuilder)
@@ -213,7 +260,7 @@ export class Command {
           else {
             const subSlashCommand = new SlashCommandSubcommandGroupBuilder()
               .setName(key2)
-              .setNameLocalizations(localization[`${key1} ${key2}`])
+              .setNameLocalizations(localization[`${key1} ${key2}`]?.name || {})
               .setDescription(`'${key1} ${key2}' SubCommand Group`);
             for (const value3 of Object.values(value2))
               subSlashCommand.addSubcommand(value3);

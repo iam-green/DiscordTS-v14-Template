@@ -4,11 +4,11 @@ import { BotConfig, EmbedConfig } from '../config';
 
 export default new ExtendedCommand({
   name: 'info',
-  localization: { ko: '정보' },
-  builder: (builder) =>
-    builder
-      .setDescription('Check the bot information.')
-      .setDescriptionLocalizations({ ko: '봇 정보를 확인합니다.' }),
+  description: 'Check the bot information.',
+  localization: {
+    name: { ko: '정보' },
+    description: { ko: '봇 정보를 확인합니다.' },
+  },
   run: async ({ interaction, client }) => {
     await interaction.deferReply({ ephemeral: true }).catch(() => {});
     if (!interaction.deferred) return;
