@@ -56,5 +56,16 @@
   "Embed_Warn_OnlyBotAdminCanUse_Title": ":warning: 봇 관리자만 사용 가능",
   "Embed_Warn_OnlyBotAdminCanUse_Description": "이 명령어는 봇 관리자만 사용할 수 있습니다.",
   "Embed_Warn_OnlyGuildOwnerCanUse_Title": ":warning: 서버 소유자만 사용 가능",
-  "Embed_Warn_OnlyGuildOwnerCanUse_Description": "이 명령어는 서버 소유자만 사용할 수 있습니다."
+  "Embed_Warn_OnlyGuildOwnerCanUse_Description": "이 명령어는 서버 소유자만 사용할 수 있습니다.",
+  "Embed_Warn_OnlyCanUseInGuild_Title": ":warning: 서버에서만 사용 가능",
+  "Embed_Warn_OnlyCanUseInGuild_Description": "이 명령어는 서버에서만 사용할 수 있습니다.",
+  "Embed_Info_Title": ":information_source: `{0}` 봇 정보",
+  "Embed_Info_Guild_Title": "서버 수",
+  "Embed_Info_Guild_Value": "`{0}`개",
+  "Embed_Info_User_Title": "유저 수",
+  "Embed_Info_User_Value": "`{0}`명",
+  "Embed_Info_Cluster_Title": "클러스터",
+  "Embed_Info_Cluster_Value": "`{0}`개 중 `{1}`번 클러스터",
+  "Embed_Info_Shard_Title": "샤드",
+  "Embed_Info_Shard_Value": "`{0}`개 중 `{1}`번 샤드"
 }

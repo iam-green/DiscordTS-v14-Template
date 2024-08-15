@@ -56,5 +56,16 @@
   "Embed_Warn_OnlyBotAdminCanUse_Title": ":warning: Only Bot Admin Can Use",
   "Embed_Warn_OnlyBotAdminCanUse_Description": "This command can only be used by the bot administrator.",
   "Embed_Warn_OnlyGuildOwnerCanUse_Title": ":warning: Only Guild Owner Can Use",
-  "Embed_Warn_OnlyGuildOwnerCanUse_Description": "This command can only be used by the server owner."
+  "Embed_Warn_OnlyGuildOwnerCanUse_Description": "This command can only be used by the server owner.",
+  "Embed_Warn_OnlyCanUseInGuild_Title": ":warning: Only Can Use In Guild",
+  "Embed_Warn_OnlyCanUseInGuild_Description": "This command can only be used in the server.",
+  "Embed_Info_Title": ":information_source: `{0}` Bot Information",
+  "Embed_Info_Guild_Title": "Guild Count",
+  "Embed_Info_Guild_Value": "`{0}` Guilds",
+  "Embed_Info_User_Title": "User Count",
+  "Embed_Info_User_Value": "`{0}` Users",
+  "Embed_Info_Cluster_Title": "Cluster",
+  "Embed_Info_Cluster_Value": "Cluster `{1}` out of `{0}`",
+  "Embed_Info_Shard_Title": "Shard",
+  "Embed_Info_Shard_Value": "Shard `{1}` out of `{0}`"
 }
