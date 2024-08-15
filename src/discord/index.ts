@@ -1,10 +1,12 @@
 import { Cluster } from './cluster';
 import { Command } from './command';
+import { Event } from './event';
 
 export * from './client';
 export * from './util';
 export * from './language';
 export * from './command';
+export * from './event';
 export * from './cluster';
 
 export const discordInit = async () => {
@@ -12,7 +14,8 @@ export const discordInit = async () => {
   await Command.registerCommand();
   await Command.registerGuildCommand();
 
-  // Log Loaded Commands
+  // Log Loaded Commands & Events
+  await Event.logEvents();
   await Command.logCommands();
 
   // Spawn Discord Client Cluster
