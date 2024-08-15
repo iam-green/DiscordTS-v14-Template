@@ -1,6 +1,6 @@
 import {
-  PermissionFlagsBits,
   PermissionResolvable,
+  PermissionsBitField,
   REST,
   Routes,
 } from 'discord.js';
@@ -44,13 +44,24 @@ export class DiscordUtil {
     return this.developer_id;
   }
 
-  static permission(
+  static convertPermissionToString(
     value: PermissionResolvable,
-  ): keyof typeof PermissionFlagsBits {
+  ): keyof typeof PermissionsBitField.Flags {
     if (typeof value != 'bigint' && !/^-?\d+$/.test(value.toString()))
-      return value as keyof typeof PermissionFlagsBits;
-    return Object.entries(PermissionFlagsBits).find(
+      return value as keyof typeof PermissionsBitField.Flags;
+    return Object.entries(PermissionsBitField.Flags).find(
       ([, v]) => v == value,
-    )![0] as keyof typeof PermissionFlagsBits;
+    )![0] as keyof typeof PermissionsBitField.Flags;
+  }
+
+  static checkPermission(
+    memberPermission: Readonly<PermissionsBitField> | undefined | null,
+    permission: PermissionResolvable | PermissionResolvable[],
+  ): { status: boolean; require_permission?: PermissionResolvable[] } {
+    if (!memberPermission) return { status: false };
+    const require_permission = [] as PermissionResolvable[];
+    for (const p of Array.isArray(permission) ? permission : [permission])
+      if (!memberPermission.has(p)) require_permission.push(p);
+    return { status: require_permission.length == 0, require_permission };
   }
 }

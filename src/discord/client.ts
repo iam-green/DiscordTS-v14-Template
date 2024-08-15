@@ -98,16 +98,11 @@ export class ExtendedClient extends Client {
       }
 
       // Check Bot Permission
-      const requireBotPermission: string[] = [];
-      for (const permission of command.permission?.bot ?? [])
-        if (!interaction.guild?.members.me?.permissions.has(permission))
-          requireBotPermission.push(
-            Language.get(
-              interaction.locale,
-              `Permission_${DiscordUtil.permission(permission)}` as keyof LanguageData,
-            ),
-          );
-      if (requireBotPermission.length > 0)
+      const botPermission = DiscordUtil.checkPermission(
+        interaction.guild?.members.me?.permissions,
+        command.permission?.bot ?? [],
+      );
+      if (!botPermission.status)
         return interaction
           .reply({
             embeds: [
@@ -122,7 +117,16 @@ export class ExtendedClient extends Client {
                   Language.get(
                     interaction.locale,
                     'Embed_Warn_BotRequirePermission_Description',
-                    `\`${requireBotPermission.join('`, `')}\``,
+                    `\`${botPermission?.require_permission
+                      ?.map((v) => {
+                        const permission =
+                          DiscordUtil.convertPermissionToString(v);
+                        return Language.get(
+                          interaction.locale,
+                          `Permission_${permission}` as keyof LanguageData,
+                        );
+                      })
+                      ?.join('`, `')}\``,
                   ),
                 )
                 .setColor(EmbedConfig.WARN_COLOR)
@@ -136,17 +140,11 @@ export class ExtendedClient extends Client {
           })
           .catch(() => {});
 
-      // Check User Permission
-      const requireUserPermission: string[] = [];
-      for (const permission of command.permission?.user ?? [])
-        if (!interaction.memberPermissions?.has(permission))
-          requireUserPermission.push(
-            Language.get(
-              interaction.locale,
-              `Permission_${DiscordUtil.permission(permission)}` as keyof LanguageData,
-            ),
-          );
-      if (requireUserPermission.length > 0)
+      const userPermission = DiscordUtil.checkPermission(
+        interaction.memberPermissions,
+        command.permission?.user ?? [],
+      );
+      if (!userPermission.status)
         return interaction
           .reply({
             embeds: [
@@ -161,7 +159,16 @@ export class ExtendedClient extends Client {
                   Language.get(
                     interaction.locale,
                     'Embed_Warn_UserRequirePermission_Description',
-                    `\`${requireUserPermission.join('`, `')}\``,
+                    `\`${userPermission?.require_permission
+                      ?.map((v) => {
+                        const permission =
+                          DiscordUtil.convertPermissionToString(v);
+                        return Language.get(
+                          interaction.locale,
+                          `Permission_${permission}` as keyof LanguageData,
+                        );
+                      })
+                      ?.join('`, `')}\``,
                   ),
                 )
                 .setColor(EmbedConfig.WARN_COLOR)
