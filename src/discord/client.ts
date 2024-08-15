@@ -11,7 +11,7 @@ import chalk from 'chalk';
 import { Command, ExtendedInteraction } from './command';
 import { DiscordUtil } from './util';
 import { Language, LanguageData } from './language';
-import config from '../config';
+import { EmbedConfig } from '../config';
 
 export class ExtendedClient extends Client {
   cluster = new ClusterClient(this);
@@ -82,7 +82,7 @@ export class ExtendedClient extends Client {
                       `\`${Math.round((cooldown - now) * 10) / 10}\``,
                     ),
                   )
-                  .setColor(config.EMBED_WARN_COLOR)
+                  .setColor(EmbedConfig.WARN_COLOR)
                   .setFooter({
                     text: interaction.user.tag,
                     iconURL: interaction.user.avatarURL() || undefined,
@@ -124,7 +124,7 @@ export class ExtendedClient extends Client {
                     `\`${requireBotPermission.join('`, `')}\``,
                   ),
                 )
-                .setColor(config.EMBED_WARN_COLOR)
+                .setColor(EmbedConfig.WARN_COLOR)
                 .setFooter({
                   text: interaction.user.tag,
                   iconURL: interaction.user.avatarURL() || undefined,
@@ -163,7 +163,7 @@ export class ExtendedClient extends Client {
                     `\`${requireUserPermission.join('`, `')}\``,
                   ),
                 )
-                .setColor(config.EMBED_WARN_COLOR)
+                .setColor(EmbedConfig.WARN_COLOR)
                 .setFooter({
                   text: interaction.user.tag,
                   iconURL: interaction.user.avatarURL() || undefined,
@@ -200,7 +200,7 @@ export class ExtendedClient extends Client {
                     'Embed_Warn_OnlyBotAdminCanUse_Description',
                   ),
                 )
-                .setColor(config.EMBED_WARN_COLOR)
+                .setColor(EmbedConfig.WARN_COLOR)
                 .setFooter({
                   text: interaction.user.tag,
                   iconURL: interaction.user.avatarURL() || undefined,
@@ -232,7 +232,7 @@ export class ExtendedClient extends Client {
                     'Embed_Warn_OnlyGuildOwnerCanUse_Description',
                   ),
                 )
-                .setColor(config.EMBED_WARN_COLOR)
+                .setColor(EmbedConfig.WARN_COLOR)
                 .setFooter({
                   text: interaction.user.tag,
                   iconURL: interaction.user.avatarURL() || undefined,
