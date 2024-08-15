@@ -6,7 +6,7 @@ export class Cluster {
 
   static async spawn() {
     this.manager = new ClusterManager(
-      `${__dirname}/start.${process.argv[1].endsWith('.js') ? 'js' : 'ts'}`,
+      `${__dirname}/start.${process.argv[1].endsWith('.ts') ? 'ts' : 'js'}`,
       {
         token: process.env.BOT_TOKEN,
         shardsPerClusters: 4,
