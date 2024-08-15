@@ -7,7 +7,7 @@ export type LanguageData = typeof data;
 export class Language {
   private static data: Partial<Record<LocaleString, LanguageData>> = {};
 
-  private static async init() {
+  static async init() {
     const locales = glob
       .sync(`${__dirname.replace(/\\/g, '/')}/../language/*.json`)
       .map(
@@ -21,12 +21,12 @@ export class Language {
         )) as LanguageData;
   }
 
-  static async get(
+  static get(
     locale: LocaleString,
     data: keyof LanguageData,
     ...formats: any[]
   ) {
-    if (Object.keys(this.data).length < 1) await this.init();
+    if (Object.keys(this.data).length < 1) return '';
     const result =
       this.data[locale]?.[data] ?? this.data['en-US']?.[data] ?? '';
     if (!/{(\d+)}/g.test(result)) return result;
