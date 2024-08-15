@@ -1,6 +1,8 @@
 import { Locale, LocaleString } from 'discord.js';
 import { glob } from 'glob';
-import { LanguageData } from '../language/type';
+import data from '../language/en-US.json';
+
+export type LanguageData = typeof data;
 
 export class Language {
   private static data: Partial<Record<LocaleString, LanguageData>> = {};
