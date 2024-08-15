@@ -1,6 +1,5 @@
 import { ClusterManager } from 'discord-hybrid-sharding';
 import 'dotenv/config';
-import 'colors';
 
 export class Cluster {
   static manager?: ClusterManager;
