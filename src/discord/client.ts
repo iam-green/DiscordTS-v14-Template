@@ -7,11 +7,12 @@ import {
 } from 'discord.js';
 import { Log } from '../module';
 import { ClusterClient } from 'discord-hybrid-sharding';
-import chalk from 'chalk';
 import { Command, ExtendedInteraction } from './command';
+import { Event } from './event';
 import { DiscordUtil } from './util';
 import { Language, LanguageData } from './language';
 import { EmbedConfig } from '../config';
+import chalk from 'chalk';
 
 export class ExtendedClient extends Client {
   cluster = new ClusterClient(this);
@@ -31,14 +32,15 @@ export class ExtendedClient extends Client {
     Log.info(`${this.prefix} Logged in as ${chalk.green(this.user?.tag)}!`);
   }
 
-  async registerModules() {
+  private async registerModules() {
     await this.addCommands();
+    await this.addEvents();
     this.on('shardReady', async (id) =>
       Log.info(`${this.prefix} Shard ${chalk.green(`#${id}`)} is ready!`),
     );
   }
 
-  async addCommands() {
+  private async addCommands() {
     const commands = await Command.getAllCommands();
     this.on(Events.InteractionCreate, async (interaction) => {
       if (!interaction.isChatInputCommand()) return;
@@ -253,5 +255,14 @@ export class ExtendedClient extends Client {
         interaction: interaction as ExtendedInteraction,
       });
     });
+  }
+
+  private async addEvents() {
+    const events = await Event.getEvents();
+    for (const { event } of events)
+      this[event.once ? 'once' : 'on'](
+        event.event,
+        async (...args) => await event.run(this, ...args),
+      );
   }
 }
