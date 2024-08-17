@@ -1,0 +1,181 @@
+import { Guild, VoiceState } from 'discord.js';
+import { VoiceInfo, VoiceQueueInfo } from '../types';
+import {
+  AudioPlayerStatus,
+  createAudioPlayer,
+  createAudioResource,
+  getVoiceConnection,
+  joinVoiceChannel,
+  NoSubscriberBehavior,
+  VoiceConnection,
+  VoiceConnectionDisconnectReason,
+  VoiceConnectionStatus,
+} from '@discordjs/voice';
+import { Log } from './log';
+
+export class Voice {
+  static list: VoiceInfo[] = [];
+
+  static findInfo(guild: Guild) {
+    return this.list.find((v) => v.guild_id == guild.id);
+  }
+
+  static removeInfo(guild: Guild) {
+    this.list.splice(
+      this.list.findIndex((v) => v.guild_id == guild.id),
+      1,
+    );
+  }
+
+  static checkJoined(guild: Guild) {
+    const connection = getVoiceConnection(guild.id);
+    if (!connection) return undefined;
+    return this.findInfo(guild);
+  }
+
+  static async join(guild: Guild, voice: VoiceState) {
+    if (!voice.channel) return;
+    if (this.findInfo(guild)) this.removeInfo(guild);
+    joinVoiceChannel({
+      channelId: voice.channel.id,
+      guildId: guild.id,
+      adapterCreator: guild.voiceAdapterCreator,
+    });
+    this.list.push({
+      guild_id: guild.id,
+      voice_id: voice.channel.id,
+      queue: [],
+      repeat: false,
+      status: { adding: false, voiceAttempt: 1, voiceRestarting: false },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+
+  static async subscribe(
+    connection: VoiceConnection,
+    voice: VoiceInfo,
+    option: VoiceQueueInfo,
+  ) {
+    voice.resource = createAudioResource(await voice.queue[0].voice(), {
+      inlineVolume: true,
+    });
+    voice.resource.volume?.setVolume(
+      (option.volume || 1) * (voice.volume || 1),
+    );
+    voice.player?.play(voice.resource);
+    (connection as any).setMaxListeners(0);
+    if (voice.player) connection.subscribe(voice.player);
+  }
+
+  static async play(guild: Guild, option: VoiceQueueInfo) {
+    const connection = getVoiceConnection(guild.id);
+    const voice = this.findInfo(guild);
+    if (!connection || !voice) return;
+
+    voice.queue.push(option);
+    if (voice.queue.length != 1) return;
+
+    if (!voice.player)
+      voice.player = createAudioPlayer({
+        behaviors: { noSubscriber: NoSubscriberBehavior.Play },
+      });
+    (voice.player as any).setMaxListeners(0);
+    this.subscribe(connection, voice, option);
+
+    // Voice Connection Unexpected Disconnection Handling
+    connection.on('stateChange', async (_, newState) => {
+      if (newState.status == VoiceConnectionStatus.Disconnected)
+        if (
+          newState.reason == VoiceConnectionDisconnectReason.WebSocketClose &&
+          ![4006, 4014].includes(newState.closeCode)
+        )
+          connection.rejoin();
+        else this.removeInfo(guild);
+      else if (newState.status == VoiceConnectionStatus.Destroyed)
+        this.removeInfo(guild);
+    });
+
+    // Voice Connection Error Handling
+    connection.on('error', async () => {
+      if (connection.state.status != VoiceConnectionStatus.Destroyed)
+        connection.rejoin();
+    });
+
+    // Voice Player Error Handling
+    voice.player?.on('error', async (e) => {
+      if (voice.status.voiceRestarting) return;
+      voice.status.voiceRestarting = true;
+      Log.warn(
+        `AudioPlayer error occured, attempt: ${voice.status.voiceAttempt++}`,
+      );
+      if (voice.status.voiceAttempt > 3) throw e;
+      voice.status.voiceRestarting = false;
+      return await this.subscribe(connection, voice, option);
+    });
+
+    // Voice Player Idle Handling
+    voice.player?.on(AudioPlayerStatus.Idle, async () => {
+      if (voice.status.voiceRestarting) return;
+      voice.status.voiceAttempt = 1;
+      if (voice.status.adding) return;
+      voice.status.adding = true;
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      if (voice.repeat) voice.queue.push(voice.queue[0]);
+      voice.queue.shift();
+      voice.queue.sort(
+        (a, b) => +(a.date || new Date(0)) - +(b.date || new Date(0)),
+      );
+      if (voice.queue.length > 0) this.subscribe(connection, voice, option);
+      voice.status.adding = false;
+    });
+  }
+
+  static skip(guild: Guild, count: number = 1) {
+    const voice = this.findInfo(guild);
+    if (!voice) return;
+    const queue = voice.queue.splice(
+      0,
+      (count > voice.queue.length ? voice.queue.length : count) - 1,
+    );
+    if (voice.repeat) voice.queue.push(...queue);
+    voice.player?.stop();
+  }
+
+  static shuffle(guild: Guild) {
+    const voice = this.findInfo(guild);
+    if (!voice) return;
+    voice.queue = [
+      voice.queue[0],
+      ...voice.queue.slice(1).sort(() => Math.random() - 0.5),
+    ];
+  }
+
+  static repeat(guild: Guild, status: boolean) {
+    const voice = this.findInfo(guild);
+    if (!voice) return;
+    voice.repeat = status;
+  }
+
+  static volume(guild: Guild, volume: number) {
+    const voice = this.findInfo(guild);
+    if (!voice) return;
+    voice.volume = volume;
+    voice.resource?.volume?.setVolume((voice.queue[0].volume || 1) * volume);
+  }
+
+  static stop(guild: Guild) {
+    const voice = this.findInfo(guild);
+    if (!voice) return;
+    voice.queue = [];
+    voice.player?.stop();
+  }
+
+  static quit(guild: Guild) {
+    const voice = this.findInfo(guild);
+    if (!voice) return;
+    voice.queue = [];
+    voice.player?.stop();
+    getVoiceConnection(guild.id)?.destroy();
+    this.removeInfo(guild);
+  }
+}
