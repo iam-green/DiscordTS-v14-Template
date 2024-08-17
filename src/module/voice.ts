@@ -12,6 +12,7 @@ import {
   VoiceConnectionStatus,
 } from '@discordjs/voice';
 import { Log } from './log';
+import { Readable } from 'stream';
 
 export class Voice {
   static list: VoiceInfo[] = [];
@@ -56,7 +57,15 @@ export class Voice {
     voice: VoiceInfo,
     option: VoiceQueueInfo,
   ) {
-    voice.resource = createAudioResource(await voice.queue[0].voice(), {
+    let voice_ = await voice.queue[0].voice();
+    if (typeof voice_ == 'string') {
+      const data = await fetch(voice_);
+      if (!data.ok) return;
+      const body = data.body;
+      if (!body) return;
+      voice_ = Readable.from(body);
+    }
+    voice.resource = createAudioResource(voice_, {
       inlineVolume: true,
     });
     voice.resource.volume?.setVolume(
