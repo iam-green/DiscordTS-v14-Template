@@ -1,5 +1,5 @@
 import { Guild, VoiceState } from 'discord.js';
-import { VoiceInfo, VoiceQueueInfo } from '../types';
+import { VoiceInfo, VoiceOption, VoiceQueueInfo } from '../types';
 import {
   AudioPlayerStatus,
   createAudioPlayer,
@@ -34,7 +34,11 @@ export class Voice {
     return this.findInfo(guild);
   }
 
-  static async join(guild: Guild, voice: VoiceState) {
+  static async join(
+    guild: Guild,
+    voice: VoiceState,
+    option?: Partial<VoiceOption>,
+  ) {
     if (!voice.channel) return;
     if (this.findInfo(guild)) this.removeInfo(guild);
     joinVoiceChannel({
@@ -46,7 +50,7 @@ export class Voice {
       guild_id: guild.id,
       voice_id: voice.channel.id,
       queue: [],
-      repeat: false,
+      option,
       status: { adding: false, voiceAttempt: 1, voiceRestarting: false },
     });
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -69,7 +73,7 @@ export class Voice {
       inlineVolume: true,
     });
     voice.resource.volume?.setVolume(
-      (option.volume || 1) * (voice.volume || 1),
+      (option.volume || 1) * (voice.option?.volume || 1),
     );
     voice.player?.play(voice.resource);
     (connection as any).setMaxListeners(0);
@@ -93,13 +97,12 @@ export class Voice {
 
     // Voice Connection Unexpected Disconnection Handling
     connection.on('stateChange', async (_, newState) => {
-      if (newState.status == VoiceConnectionStatus.Disconnected)
-        if (
-          newState.reason == VoiceConnectionDisconnectReason.WebSocketClose &&
-          ![4006, 4014].includes(newState.closeCode)
-        )
-          connection.rejoin();
-        else this.removeInfo(guild);
+      if (
+        newState.status == VoiceConnectionStatus.Disconnected &&
+        newState.reason == VoiceConnectionDisconnectReason.WebSocketClose &&
+        ![4006, 4014].includes(newState.closeCode)
+      )
+        connection.rejoin();
       else if (newState.status == VoiceConnectionStatus.Destroyed)
         this.removeInfo(guild);
     });
@@ -129,7 +132,7 @@ export class Voice {
       if (voice.status.adding) return;
       voice.status.adding = true;
       await new Promise((resolve) => setTimeout(resolve, 0));
-      if (voice.repeat) voice.queue.push(voice.queue[0]);
+      if (voice.option?.repeat) voice.queue.push(voice.queue[0]);
       voice.queue.shift();
       voice.queue.sort(
         (a, b) => +(a.date || new Date(0)) - +(b.date || new Date(0)),
@@ -146,7 +149,7 @@ export class Voice {
       0,
       (count > voice.queue.length ? voice.queue.length : count) - 1,
     );
-    if (voice.repeat) voice.queue.push(...queue);
+    if (voice.option?.repeat) voice.queue.push(...queue);
     voice.player?.stop();
   }
 
@@ -162,13 +165,15 @@ export class Voice {
   static repeat(guild: Guild, status: boolean) {
     const voice = this.findInfo(guild);
     if (!voice) return;
-    voice.repeat = status;
+    if (!voice.option) voice.option = {};
+    voice.option.repeat = status;
   }
 
   static volume(guild: Guild, volume: number) {
     const voice = this.findInfo(guild);
     if (!voice) return;
-    voice.volume = volume;
+    if (!voice.option) voice.option = {};
+    voice.option.volume = volume;
     voice.resource?.volume?.setVolume((voice.queue[0].volume || 1) * volume);
   }
 
@@ -182,9 +187,8 @@ export class Voice {
   static quit(guild: Guild) {
     const voice = this.findInfo(guild);
     if (!voice) return;
-    voice.queue = [];
     voice.player?.stop();
-    getVoiceConnection(guild.id)?.destroy();
     this.removeInfo(guild);
+    getVoiceConnection(guild.id)?.destroy();
   }
 }

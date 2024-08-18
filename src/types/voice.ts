@@ -1,14 +1,19 @@
 import { AudioPlayer, AudioResource } from '@discordjs/voice';
 import { Readable } from 'stream';
 
+export interface VoiceOption {
+  volume: number;
+  repeat: boolean;
+  auto_left: boolean;
+}
+
 export interface VoiceInfo {
   guild_id: string;
   voice_id: string;
   queue: VoiceQueueInfo[];
   resource?: AudioResource;
   player?: AudioPlayer;
-  volume?: number;
-  repeat: boolean;
+  option?: Partial<VoiceOption>;
   status: {
     adding: boolean;
     voiceAttempt: number;
