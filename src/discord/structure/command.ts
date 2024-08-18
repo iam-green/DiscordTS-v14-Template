@@ -1,4 +1,5 @@
 import {
+  AutocompleteInteraction,
   CommandInteraction,
   CommandInteractionOptionResolver,
   GuildMember,
@@ -22,6 +23,12 @@ export class ExtendedCommand {
     Object.assign(this, commandOptions);
   }
 }
+
+export type AutoCompleteOptions = {
+  client: ExtendedClient;
+  interaction: AutocompleteInteraction;
+  args: AutocompleteInteraction['options'];
+};
 
 export type RunOptions = {
   client: ExtendedClient;
@@ -56,7 +63,7 @@ export type CommandType = {
     guildOwner: boolean;
   }>;
   run: (options: RunOptions) => void;
-  autoComplete?: (options: Omit<RunOptions, 'args'>) => void;
+  autoComplete?: (options: AutoCompleteOptions) => void;
 };
 
 export type CommandInfo = {
