@@ -12,7 +12,7 @@ export type EventInfo<Key extends keyof ClientEvents> = {
 export type EventType<Key extends keyof ClientEvents> = {
   event: Key;
   once?: boolean;
-  run: (client: ExtendedClient, ...args: ClientEvents[Key]) => any;
+  run: (client: ExtendedClient, ...args: ClientEvents[Key]) => void;
 };
 
 export class ExtendedEvent<Key extends keyof ClientEvents> {

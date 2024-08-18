@@ -31,7 +31,7 @@ export interface MenuType {
     botDeveloper: boolean;
     guildOwner: boolean;
   }>;
-  run: (options: RunOptions) => any;
+  run: (options: RunOptions) => void;
 }
 
 export class ExtendedMenu {

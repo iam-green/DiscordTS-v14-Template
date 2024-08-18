@@ -55,8 +55,8 @@ export type CommandType = {
     botDeveloper: boolean;
     guildOwner: boolean;
   }>;
-  run: (options: RunOptions) => any;
-  autoComplete?: (options: Omit<RunOptions, 'args'>) => any;
+  run: (options: RunOptions) => void;
+  autoComplete?: (options: Omit<RunOptions, 'args'>) => void;
 };
 
 export type CommandInfo = {
