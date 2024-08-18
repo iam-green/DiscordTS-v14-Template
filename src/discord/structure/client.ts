@@ -5,13 +5,12 @@ import {
   EmbedBuilder,
   Events,
 } from 'discord.js';
-import { Log } from '../module';
+import { Log } from '../../module';
 import { ClusterClient } from 'discord-hybrid-sharding';
 import { Command, ExtendedInteraction } from './command';
 import { Event } from './event';
-import { DiscordUtil } from './util';
-import { Language, LanguageData } from './language';
-import { EmbedConfig } from '../config';
+import { DiscordUtil, Language, LanguageData } from '../module';
+import { EmbedConfig } from '../../config';
 import chalk from 'chalk';
 import { Menu } from './menu';
 

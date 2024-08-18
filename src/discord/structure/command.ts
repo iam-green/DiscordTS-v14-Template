@@ -12,8 +12,8 @@ import {
   SlashCommandSubcommandGroupBuilder,
 } from 'discord.js';
 import { glob } from 'glob';
-import { Log } from '../module';
-import { DiscordUtil } from './util';
+import { Log } from '../../module';
+import { DiscordUtil } from '../module';
 import { ExtendedClient } from './client';
 import chalk from 'chalk';
 
@@ -88,7 +88,7 @@ export class Command {
   static async getAllCommands() {
     if (this.allCommands.length < 1) {
       const commands = glob.sync(
-        `${__dirname.replace(/\\/g, '/')}/../command/**/*{.ts,.js}`,
+        `${__dirname.replace(/\\/g, '/')}/../../command/**/*{.ts,.js}`,
       );
       for (const path of commands)
         this.allCommands.push({ path, command: (await import(path))?.default });

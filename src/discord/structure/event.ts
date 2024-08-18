@@ -1,6 +1,6 @@
 import { ClientEvents } from 'discord.js';
 import { glob } from 'glob';
-import { Log } from '../module';
+import { Log } from '../../module';
 import { ExtendedClient } from './client';
 import chalk from 'chalk';
 
@@ -25,7 +25,7 @@ export class Event {
   static async getEvents() {
     const result: { path: string; event: EventType<keyof ClientEvents> }[] = [];
     const events = glob.sync(
-      `${__dirname.replace(/\\/g, '/')}/../event/**/*{.ts,.js}`,
+      `${__dirname.replace(/\\/g, '/')}/../../event/**/*{.ts,.js}`,
     );
     for (const path of events)
       result.push({ path, event: (await import(path))?.default });

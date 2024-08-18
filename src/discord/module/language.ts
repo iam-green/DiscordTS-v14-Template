@@ -1,6 +1,6 @@
 import { Locale, LocaleString } from 'discord.js';
 import { glob } from 'glob';
-import data from '../language/en-US.json';
+import data from '../../language/en-US.json';
 
 export type LanguageData = typeof data;
 
@@ -9,7 +9,7 @@ export class Language {
 
   static async init() {
     const locales = glob
-      .sync(`${__dirname.replace(/\\/g, '/')}/../language/*.json`)
+      .sync(`${__dirname.replace(/\\/g, '/')}/../../language/*.json`)
       .map(
         (v) => v.replace(/\\/g, '/').split('language/')[1].split('.json')[0],
       );
@@ -17,7 +17,7 @@ export class Language {
     for (const locale of locales)
       if (localeList.includes(locale))
         this.data[locale] = (await import(
-          `../language/${locale}.json`
+          `../../language/${locale}.json`
         )) as LanguageData;
   }
 

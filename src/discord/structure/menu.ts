@@ -6,7 +6,7 @@ import {
 } from 'discord.js';
 import { ExtendedInteraction } from './command';
 import { glob } from 'glob';
-import { Log } from '../module';
+import { Log } from '../../module';
 import { ExtendedClient } from './client';
 import chalk from 'chalk';
 
@@ -49,7 +49,7 @@ export class Menu {
   static async getAllMenus() {
     const result: { path: string; menu: MenuType }[] = [];
     const menus = glob.sync(
-      `${__dirname.replace(/\\/g, '/')}/../menu/**/*{.ts,.js}`,
+      `${__dirname.replace(/\\/g, '/')}/../../menu/**/*{.ts,.js}`,
     );
     for (const path of menus)
       result.push({ path, menu: (await import(path))?.default });

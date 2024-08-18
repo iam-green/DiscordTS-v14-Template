@@ -1,7 +1,7 @@
 import { GatewayIntentBits, Options } from 'discord.js';
 import { getInfo } from 'discord-hybrid-sharding';
-import { ExtendedClient } from './client';
 import { databaseInit } from '../database';
+import { ExtendedClient } from './structure';
 import 'dotenv/config';
 
 const client = new ExtendedClient({
@@ -16,7 +16,7 @@ const client = new ExtendedClient({
     messages: { interval: 3600, lifetime: 1800 },
     users: {
       interval: 3600,
-      filter: () => (user) => user.bot && user.id !== user.client.user.id,
+      filter: () => (user) => user.bot && user.id != user.client.user.id,
     },
   },
   shards: getInfo().SHARD_LIST,

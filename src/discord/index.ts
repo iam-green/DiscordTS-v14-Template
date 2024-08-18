@@ -1,15 +1,8 @@
-import { Cluster } from './cluster';
-import { Command } from './command';
-import { Event } from './event';
-import { Menu } from './menu';
+import { Cluster } from './module';
+import { Command, Event, Menu } from './structure';
 
-export * from './client';
-export * from './util';
-export * from './language';
-export * from './command';
-export * from './menu';
-export * from './event';
-export * from './cluster';
+export * from './structure';
+export * from './module';
 
 export const discordInit = async () => {
   // Register Commands
