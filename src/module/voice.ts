@@ -103,8 +103,6 @@ export class Voice {
         ![4006, 4014].includes(newState.closeCode)
       )
         connection.rejoin();
-      else if (newState.status == VoiceConnectionStatus.Destroyed)
-        this.removeInfo(guild);
     });
 
     // Voice Connection Error Handling
