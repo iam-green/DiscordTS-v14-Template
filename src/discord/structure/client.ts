@@ -4,15 +4,17 @@ import {
   CommandInteractionOptionResolver,
   EmbedBuilder,
   Events,
+  LocaleString,
 } from 'discord.js';
 import { Log } from '../../module';
 import { ClusterClient } from 'discord-hybrid-sharding';
 import { Command, ExtendedInteraction } from './command';
 import { Event } from './event';
 import { DiscordUtil, Language, LanguageData } from '../module';
-import { EmbedConfig } from '../../config';
+import { BotConfig, EmbedConfig } from '../../config';
 import chalk from 'chalk';
 import { Menu } from './menu';
+import { TextCommand } from './textCommand';
 
 export class ExtendedClient extends Client {
   cluster = new ClusterClient(this);
@@ -20,6 +22,7 @@ export class ExtendedClient extends Client {
   private prefix = `${chalk.cyan('[')}Cluster ${chalk.green(
     `#${this.cluster.id}`,
   )}${chalk.cyan(']')}`;
+  private locale: Record<string, LocaleString> = {};
 
   constructor(option: ClientOptions) {
     super(option);
@@ -34,6 +37,7 @@ export class ExtendedClient extends Client {
 
   private async registerModules() {
     await this.addCommands();
+    await this.addTextCommands();
     await this.addEvents();
     await this.addMenus();
     this.on('shardReady', async (id) =>
@@ -47,6 +51,12 @@ export class ExtendedClient extends Client {
       if (!interaction.isChatInputCommand() || interaction.isAutocomplete())
         return;
 
+      if (
+        !this.locale[interaction.user.id] ||
+        this.locale[interaction.user.id] != interaction.locale
+      )
+        this.locale[interaction.user.id] = interaction.locale;
+
       // Find Command
       const name = [
         interaction.commandName,
@@ -59,7 +69,7 @@ export class ExtendedClient extends Client {
       if (!command) return;
 
       if (interaction.isAutocomplete() && command.autoComplete)
-        return await command.autoComplete({
+        return command.autoComplete({
           client: this,
           interaction: interaction as ExtendedInteraction,
         });
@@ -290,7 +300,7 @@ export class ExtendedClient extends Client {
           .catch(() => {});
 
       // Run Command
-      await command.run({
+      command.run({
         args: interaction.options as CommandInteractionOptionResolver,
         client: this,
         interaction: interaction as ExtendedInteraction,
@@ -301,9 +311,8 @@ export class ExtendedClient extends Client {
   private async addEvents() {
     const events = await Event.getEvents();
     for (const { event } of events)
-      this[event.once ? 'once' : 'on'](
-        event.event,
-        async (...args) => await event.run(this, ...args),
+      this[event.once ? 'once' : 'on'](event.event, (...args) =>
+        event.run(this, ...args),
       );
   }
 
@@ -544,9 +553,268 @@ export class ExtendedClient extends Client {
           .catch(() => {});
 
       // Run Menu
-      await menu.run({
+      menu.run({
         client: this,
         interaction: interaction as ExtendedInteraction,
+      });
+    });
+  }
+
+  private async addTextCommands() {
+    const commnads = await TextCommand.getCommands();
+    this.on(Events.MessageCreate, async (message) => {
+      if (message.author.bot) return;
+
+      // Check Prefix
+      let prefix = '';
+      for (const p of BotConfig.PREFIX.sort((a, b) => b.length - a.length))
+        if (message.content.trim().startsWith(p)) {
+          prefix = p;
+          break;
+        }
+      if (!prefix) return;
+
+      // Find Text Command
+      const content = message.content.slice(prefix.length).trim();
+      const command = commnads.find((command) => {
+        for (const name of command.command.name)
+          if (content.startsWith(name)) return true;
+        return false;
+      })?.command;
+      if (!command) return;
+
+      // Check Guild Only
+      if (command.options?.onlyGuild && !message.guild)
+        return await message.reply({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle(
+                Language.get(
+                  this.locale[message.author.id] || 'en-US',
+                  'Embed_Warn_OnlyCanUseInGuild_Title',
+                ),
+              )
+              .setDescription(
+                Language.get(
+                  this.locale[message.author.id] || 'en-US',
+                  'Embed_Warn_OnlyCanUseInGuild_Description',
+                ),
+              )
+              .setColor(EmbedConfig.WARN_COLOR)
+              .setFooter({
+                text: message.author.tag,
+                iconURL: message.author.avatarURL() || undefined,
+              })
+              .setTimestamp(),
+          ],
+          allowedMentions: { parse: [] },
+        });
+
+      // Check Cooldown
+      const commandName = Array.isArray(command.name)
+        ? command.name[0]
+        : command.name;
+      if (command.options?.cooldown) {
+        const now = Date.now();
+        if (!this.cooldown[message.author.id])
+          this.cooldown[message.author.id] = {};
+        if (!this.cooldown[message.author.id][commandName])
+          this.cooldown[message.author.id][commandName] = 0;
+        const cooldown = this.cooldown[message.author.id][commandName];
+        if (cooldown > now)
+          return message
+            .reply({
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle(
+                    Language.get(
+                      this.locale[message.author.id] || 'en-US',
+                      'Embed_Warn_CommandCooldown_Title',
+                    ),
+                  )
+                  .setDescription(
+                    Language.get(
+                      this.locale[message.author.id] || 'en-US',
+                      'Embed_Warn_CommandCooldown_Description',
+                      `\`${Math.round((cooldown - now) / 100) / 10}\``,
+                    ),
+                  )
+                  .setColor(EmbedConfig.WARN_COLOR)
+                  .setFooter({
+                    text: message.author.tag,
+                    iconURL: message.author.avatarURL() || undefined,
+                  })
+                  .setTimestamp(),
+              ],
+              allowedMentions: { parse: [] },
+            })
+            .catch(() => {});
+        this.cooldown[message.author.id][commandName] =
+          now + command.options.cooldown;
+      }
+
+      if (message.guild) {
+        // Check Bot Permission
+        const botPermission = DiscordUtil.checkPermission(
+          message.guild.members.me?.permissions,
+          command.permission?.bot ?? [],
+        );
+        if (!botPermission.status)
+          return message
+            .reply({
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle(
+                    Language.get(
+                      this.locale[message.author.id] || 'en-US',
+                      'Embed_Warn_BotRequirePermission_Title',
+                    ),
+                  )
+                  .setDescription(
+                    Language.get(
+                      this.locale[message.author.id] || 'en-US',
+                      'Embed_Warn_BotRequirePermission_Description',
+                      `\`${botPermission?.require_permission
+                        ?.map((v) => {
+                          const permission =
+                            DiscordUtil.convertPermissionToString(v);
+                          return Language.get(
+                            this.locale[message.author.id] || 'en-US',
+                            `Permission_${permission}` as keyof LanguageData,
+                          );
+                        })
+                        ?.join('`, `')}\``,
+                    ),
+                  )
+                  .setColor(EmbedConfig.WARN_COLOR)
+                  .setFooter({
+                    text: message.author.tag,
+                    iconURL: message.author.avatarURL() || undefined,
+                  })
+                  .setTimestamp(),
+              ],
+              allowedMentions: { parse: [] },
+            })
+            .catch(() => {});
+
+        // Check User Permission
+        const userPermission = DiscordUtil.checkPermission(
+          message.member?.permissions,
+          command.permission?.user ?? [],
+        );
+        if (!userPermission.status)
+          return message
+            .reply({
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle(
+                    Language.get(
+                      this.locale[message.author.id] || 'en-US',
+                      'Embed_Warn_UserRequirePermission_Title',
+                    ),
+                  )
+                  .setDescription(
+                    Language.get(
+                      this.locale[message.author.id] || 'en-US',
+                      'Embed_Warn_UserRequirePermission_Description',
+                      `\`${userPermission?.require_permission
+                        ?.map((v) => {
+                          const permission =
+                            DiscordUtil.convertPermissionToString(v);
+                          return Language.get(
+                            this.locale[message.author.id] || 'en-US',
+                            `Permission_${permission}` as keyof LanguageData,
+                          );
+                        })
+                        ?.join('`, `')}\``,
+                    ),
+                  )
+                  .setColor(EmbedConfig.WARN_COLOR)
+                  .setFooter({
+                    text: message.author.tag,
+                    iconURL: message.author.avatarURL() || undefined,
+                  })
+                  .setTimestamp(),
+              ],
+              allowedMentions: { parse: [] },
+            })
+            .catch(() => {});
+      }
+
+      // Check botAdmin, botDeveloper
+      if (
+        (command.options?.botAdmin || command.options?.botDeveloper) &&
+        ![
+          ...(command.options?.botAdmin ? await DiscordUtil.adminId() : []),
+          ...(command.options?.botDeveloper
+            ? await DiscordUtil.developerId()
+            : []),
+        ].includes(message.author.id)
+      )
+        return message
+          .reply({
+            embeds: [
+              new EmbedBuilder()
+                .setTitle(
+                  Language.get(
+                    this.locale[message.author.id] || 'en-US',
+                    'Embed_Warn_OnlyBotAdminCanUse_Title',
+                  ),
+                )
+                .setDescription(
+                  Language.get(
+                    this.locale[message.author.id] || 'en-US',
+                    'Embed_Warn_OnlyBotAdminCanUse_Description',
+                  ),
+                )
+                .setColor(EmbedConfig.WARN_COLOR)
+                .setFooter({
+                  text: message.author.tag,
+                  iconURL: message.author.avatarURL() || undefined,
+                })
+                .setTimestamp(),
+            ],
+            allowedMentions: { parse: [] },
+          })
+          .catch(() => {});
+
+      // Check guildOwner
+      if (
+        command.options?.guildOwner &&
+        message.guild?.ownerId != message.author.id
+      )
+        return message
+          .reply({
+            embeds: [
+              new EmbedBuilder()
+                .setTitle(
+                  Language.get(
+                    this.locale[message.author.id] || 'en-US',
+                    'Embed_Warn_OnlyGuildOwnerCanUse_Title',
+                  ),
+                )
+                .setDescription(
+                  Language.get(
+                    this.locale[message.author.id] || 'en-US',
+                    'Embed_Warn_OnlyGuildOwnerCanUse_Description',
+                  ),
+                )
+                .setColor(EmbedConfig.WARN_COLOR)
+                .setFooter({
+                  text: message.author.tag,
+                  iconURL: message.author.avatarURL() || undefined,
+                })
+                .setTimestamp(),
+            ],
+            allowedMentions: { parse: [] },
+          })
+          .catch(() => {});
+
+      // Run Command
+      command.run({
+        client: this,
+        locale: this.locale[message.author.id] || 'en-US',
+        message,
       });
     });
   }

@@ -1,5 +1,5 @@
 import { Cluster } from './module';
-import { Command, Event, Menu } from './structure';
+import { Command, Event, Menu, TextCommand } from './structure';
 
 export * from './structure';
 export * from './module';
@@ -12,6 +12,7 @@ export const discordInit = async () => {
   // Log Loaded Commands & Events & Menus
   await Event.logEvents();
   await Menu.logMenus();
+  await TextCommand.logCommands();
   await Command.logCommands();
 
   // Spawn Discord Client Cluster
