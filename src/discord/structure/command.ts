@@ -42,7 +42,7 @@ export interface ExtendedInteraction extends CommandInteraction {
 
 export type CommandType = {
   name: string | string[];
-  description?: string | string[];
+  description: string | string[];
   localization?: Partial<{
     name: LocalizationMap | LocalizationMap[];
     description: LocalizationMap | LocalizationMap[];
