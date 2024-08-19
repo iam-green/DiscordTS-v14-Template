@@ -6,10 +6,6 @@ export default new ExtendedEvent({
   once: true,
   run: async (client) => {
     if (client.cluster.id != 0 || !process.env.KOREANBOTS_TOKEN) return;
-    await KoreanBots.init();
-    setInterval(
-      async () => await KoreanBots.update(client.cluster),
-      1000 * 60 * 10,
-    );
+    setInterval(() => KoreanBots.update(client.cluster), 1000 * 60 * 10);
   },
 });

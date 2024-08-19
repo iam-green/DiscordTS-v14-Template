@@ -1,34 +1,32 @@
-import { Koreanbots } from 'koreanbots';
-import { Log } from './log';
 import { DiscordUtil, ExtendedClient } from '../discord';
 import { ClusterClient, ClusterManager } from 'discord-hybrid-sharding';
+import { Log } from './log';
 
 export class KoreanBots {
-  static bot?: Koreanbots;
-
-  static async init() {
-    if (!process.env.KOREANBOTS_TOKEN) return;
-    this.bot = new Koreanbots({
-      api: { token: process.env.KOREANBOTS_TOKEN },
-      clientID: await DiscordUtil.clientId(),
-    });
-  }
-
   static async update(cluster: ClusterManager | ClusterClient<ExtendedClient>) {
-    try {
-      if (!process.env.KOREANBOTS_TOKEN) return;
-      const servers = (
-        (await cluster?.fetchClientValues('guilds.cache.size')) as number[]
-      ).reduce((a, b) => a + b, 0);
-      await this.bot?.mybot.update({
-        servers,
-        shards:
-          cluster instanceof ClusterClient
-            ? cluster.count
-            : cluster.clusters.size,
-      });
-    } catch (e) {
-      Log.error(e, __filename);
-    }
+    if (!process.env.KOREANBOTS_TOKEN) return;
+    const result = await fetch(
+      `https://koreanbots.dev/api/v2/bots/${await DiscordUtil.clientId()}/stats`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: process.env.KOREANBOTS_TOKEN,
+        },
+        body: JSON.stringify({
+          servers: (
+            (await cluster?.fetchClientValues('guilds.cache.size')) as number[]
+          ).reduce((a, b) => a + b, 0),
+          shards:
+            cluster instanceof ClusterClient
+              ? cluster.count
+              : cluster.clusters.size,
+        }),
+      },
+    );
+    if (!result.ok)
+      Log.error(
+        `Koreanbots.update error\n${JSON.stringify(await result.json())}`,
+      );
   }
 }
