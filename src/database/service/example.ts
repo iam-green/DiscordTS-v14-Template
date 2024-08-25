@@ -10,7 +10,7 @@ import { example } from '../schema';
 
 export class ExampleService {
   static async find(data: FindExampleDto) {
-    const { id, created, sort, page, count, from, to } = {
+    const { id, created, sort, page, limit, from, to } = {
       ...defaultFindOption(),
       ...data,
     };
@@ -22,8 +22,8 @@ export class ExampleService {
           : between(example.created, from, to),
       ),
       orderBy: sort == 'asc' ? [asc(example.created)] : [desc(example.created)],
-      offset: (page - 1) * count,
-      limit: count,
+      offset: (page - 1) * limit,
+      limit,
     });
   }
 
