@@ -1,10 +1,10 @@
-export type FindOptionDto = {
-  sort?: 'asc' | 'desc';
-  page?: number;
-  count?: number;
-  from?: Date;
-  to?: Date;
-};
+export type FindOptionDto = Partial<{
+  sort: 'asc' | 'desc';
+  page: number;
+  count: number;
+  from: Date;
+  to: Date;
+}>;
 
 export const defaultFindOption = (): Required<FindOptionDto> => ({
   sort: 'asc',
