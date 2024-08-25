@@ -34,18 +34,13 @@ export class ExampleService {
   }
 
   static async create(data: CreateExampleDto) {
-    const id = (
-      await db
-        .insert(example)
-        .values({ ...data, created: new Date() })
-        .returning({ id: example.id })
-    )[0].id;
-    return this.get(id);
+    return (await db.insert(example).values(data).returning())[0];
   }
 
   static async update(id: string, data: UpdateExampleDto) {
-    await db.update(example).set(data).where(eq(example.id, id));
-    return this.get(id);
+    return (
+      await db.update(example).set(data).where(eq(example.id, id)).returning()
+    )[0];
   }
 
   static async delete(id: string) {
