@@ -19,8 +19,8 @@ export class KoreanBots {
           ).reduce((a, b) => a + b, 0),
           shards:
             cluster instanceof ClusterClient
-              ? cluster.count
-              : cluster.clusters.size,
+              ? cluster.info.TOTAL_SHARDS
+              : cluster.totalShards,
         }),
       },
     );
