@@ -12,9 +12,16 @@ import {
   VoiceConnectionStatus,
 } from '@discordjs/voice';
 import { Log } from './log';
+import { spawn } from 'child_process';
 
 export class Voice {
   static list: VoiceInfo[] = [];
+
+  static urlToStream(url: string) {
+    return spawn('ffmpeg', ['-i', url, '-f', 'mp3', '-'], {
+      stdio: ['pipe', 'pipe', 'ignore'],
+    }).stdout;
+  }
 
   static findInfo(guild: Guild) {
     return this.list.find((v) => v.guild_id == guild.id);
