@@ -11,7 +11,7 @@ import {
   Message,
   PermissionResolvable,
 } from 'discord.js';
-import { Log } from '../../module';
+import { Log, TimeoutMessage } from '../../module';
 import { ClusterClient } from 'discord-hybrid-sharding';
 import { Command, ExtendedInteraction } from './command';
 import { Event } from './event';
@@ -181,7 +181,11 @@ export class ExtendedClient extends Client {
           permission: command.permission,
         },
       );
-      if (validate) return message.reply(validate);
+      if (validate) {
+        const replied = await message.reply(validate);
+        TimeoutMessage.set(replied, 1000 * 5);
+        return;
+      }
 
       // Run Command
       command.run({
