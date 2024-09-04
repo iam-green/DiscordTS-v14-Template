@@ -38,7 +38,8 @@ export class TextCommand {
       `${__dirname.replace(/\\/g, '/')}/../../textCommand/**/*{.ts,.js}`,
     );
     for (const path of events)
-      result.push({ path, command: (await import(path))?.default });
+      if ((await import(path))?.default instanceof ExtendedTextCommand)
+        result.push({ path, command: (await import(path)).default });
     return result;
   }
 

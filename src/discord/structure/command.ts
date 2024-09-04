@@ -98,7 +98,11 @@ export class Command {
         `${__dirname.replace(/\\/g, '/')}/../../command/**/*{.ts,.js}`,
       );
       for (const path of commands)
-        this.allCommands.push({ path, command: (await import(path))?.default });
+        if ((await import(path))?.default instanceof ExtendedCommand)
+          this.allCommands.push({
+            path,
+            command: (await import(path)).default,
+          });
     }
     return this.allCommands;
   }

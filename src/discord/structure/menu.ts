@@ -52,7 +52,8 @@ export class Menu {
       `${__dirname.replace(/\\/g, '/')}/../../menu/**/*{.ts,.js}`,
     );
     for (const path of menus)
-      result.push({ path, menu: (await import(path))?.default });
+      if ((await import(path))?.default instanceof ExtendedMenu)
+        result.push({ path, menu: (await import(path)).default });
     return result;
   }
 

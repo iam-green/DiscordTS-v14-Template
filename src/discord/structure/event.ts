@@ -28,7 +28,8 @@ export class Event {
       `${__dirname.replace(/\\/g, '/')}/../../event/**/*{.ts,.js}`,
     );
     for (const path of events)
-      result.push({ path, event: (await import(path))?.default });
+      if ((await import(path))?.default instanceof ExtendedEvent)
+        result.push({ path, event: (await import(path)).default });
     return result;
   }
 
