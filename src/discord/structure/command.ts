@@ -224,11 +224,11 @@ export class Command {
         ? command.command.name
         : [command.command.name]) {
         const nameList = name.split(' ');
-        if (nameList.length == 2 && !resultObject[nameList[0]])
+        if (nameList.length >= 2 && !resultObject[nameList[0]])
           resultObject[nameList[0]] = {};
         if (nameList.length == 3 && !resultObject[nameList[0]][nameList[1]])
           resultObject[nameList[0]][nameList[1]] = {};
-        if (nameList.length <= 2)
+        if (nameList.length >= 2)
           localization[nameList[0]] = this.getCommandLocalization(
             command.command,
             nameList[0],
