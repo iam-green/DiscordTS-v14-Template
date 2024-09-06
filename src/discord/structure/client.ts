@@ -1,5 +1,6 @@
 import {
   BaseMessageOptions,
+  CacheType,
   Client,
   ClientOptions,
   CommandInteractionOptionResolver,
@@ -9,7 +10,9 @@ import {
   InteractionReplyOptions,
   LocaleString,
   Message,
+  MessageContextMenuCommandInteraction,
   PermissionResolvable,
+  UserContextMenuCommandInteraction,
 } from 'discord.js';
 import { Log, TimeoutMessage } from '../../module';
 import { ClusterClient } from 'discord-hybrid-sharding';
@@ -144,7 +147,11 @@ export class ExtendedClient extends Client {
       // Run Menu
       menu.run({
         client: this,
-        interaction: interaction as ExtendedInteraction,
+        interaction: interaction as ExtendedInteraction &
+          (
+            | UserContextMenuCommandInteraction<CacheType>
+            | MessageContextMenuCommandInteraction<CacheType>
+          ),
       });
     });
   }

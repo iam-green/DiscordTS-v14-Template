@@ -1,8 +1,12 @@
 import {
+  ApplicationCommandType,
+  CacheType,
   ContextMenuCommandBuilder,
   ContextMenuCommandType,
   LocalizationMap,
+  MessageContextMenuCommandInteraction,
   PermissionResolvable,
+  UserContextMenuCommandInteraction,
 } from 'discord.js';
 import { ExtendedInteraction } from './command';
 import { glob } from 'glob';
@@ -10,15 +14,18 @@ import { Log } from '../../module';
 import { ExtendedClient } from './client';
 import chalk from 'chalk';
 
-interface RunOptions {
+interface RunOptions<Type> {
   client: ExtendedClient;
-  interaction: ExtendedInteraction;
+  interaction: ExtendedInteraction &
+    (Type extends ApplicationCommandType.User
+      ? UserContextMenuCommandInteraction<CacheType>
+      : MessageContextMenuCommandInteraction<CacheType>);
 }
 
-export interface MenuType {
+export interface MenuType<Type extends ContextMenuCommandType> {
   name: string | string[];
   localization?: LocalizationMap | LocalizationMap[];
-  type: ContextMenuCommandType;
+  type: Type;
   guildId?: string[];
   permission?: Partial<{
     user: PermissionResolvable[];
@@ -31,23 +38,27 @@ export interface MenuType {
     botDeveloper: boolean;
     guildOwner: boolean;
   }>;
-  run: (options: RunOptions) => void;
+  run: (options: RunOptions<Type>) => void;
 }
 
-export class ExtendedMenu {
-  constructor(menuOptions: MenuType) {
+export class ExtendedMenu<Type extends ContextMenuCommandType> {
+  constructor(menuOptions: MenuType<Type>) {
     Object.assign(this, menuOptions);
   }
 }
 
 export class Menu {
-  private static menus?: { path: string; menu: MenuType }[];
+  private static menus?: {
+    path: string;
+    menu: MenuType<ContextMenuCommandType>;
+  }[];
   private static guildMenus?: {
-    [x: string]: { path: string; menu: MenuType }[];
+    [x: string]: { path: string; menu: MenuType<ContextMenuCommandType> }[];
   };
 
   static async getAllMenus() {
-    const result: { path: string; menu: MenuType }[] = [];
+    const result: { path: string; menu: MenuType<ContextMenuCommandType> }[] =
+      [];
     const menus = glob.sync(
       `${__dirname.replace(/\\/g, '/')}/../../menu/**/*{.ts,.js}`,
     );
