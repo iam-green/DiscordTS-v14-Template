@@ -103,10 +103,11 @@ export class ExtendedClient extends Client {
       if (!command) return;
 
       // Check Options
-      const validate = await this.checkOptions(interaction, null, {
-        ...command.options,
-        permission: command.permission,
-      });
+      const validate = await this.checkOptions(
+        interaction,
+        null,
+        command.options,
+      );
       if (validate) return interaction.reply(validate);
 
       // Run Command

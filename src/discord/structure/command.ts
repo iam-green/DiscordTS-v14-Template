@@ -1,22 +1,23 @@
 import {
+  APIApplicationCommandSubcommandGroupOption,
+  APIApplicationCommandSubcommandOption,
+  ApplicationCommandOptionType,
   AutocompleteInteraction,
   CommandInteraction,
   CommandInteractionOptionResolver,
   GuildMember,
-  LocaleString,
   LocalizationMap,
   PermissionResolvable,
   REST,
+  RESTPostAPIChatInputApplicationCommandsJSONBody,
   Routes,
-  SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
-  SlashCommandSubcommandGroupBuilder,
 } from 'discord.js';
+import { ExtendedClient } from './client';
 import { glob } from 'glob';
+import chalk from 'chalk';
 import { Log } from '../../module';
 import { DiscordUtil } from '../module';
-import { ExtendedClient } from './client';
-import chalk from 'chalk';
 
 export class ExtendedCommand {
   constructor(commandOptions: CommandType) {
@@ -47,15 +48,24 @@ export type CommandType = {
     name: LocalizationMap | LocalizationMap[];
     description: LocalizationMap | LocalizationMap[];
   }>;
-  builder?: (
-    builder: SlashCommandBuilder | SlashCommandSubcommandBuilder,
-  ) => any;
-  guildId?: string[];
-  permission?: Partial<{
-    user: PermissionResolvable[];
-    bot: PermissionResolvable[];
-  }>;
+  command?:
+    | Omit<
+        APIApplicationCommandSubcommandOption,
+        | 'type'
+        | 'name'
+        | 'name_localizations'
+        | 'description'
+        | 'description_localizations'
+      >
+    | ((
+        builder: SlashCommandSubcommandBuilder,
+      ) => SlashCommandSubcommandBuilder);
   options?: Partial<{
+    guildId: string[];
+    permission: Partial<{
+      user: PermissionResolvable[];
+      bot: PermissionResolvable[];
+    }>;
     cooldown: number;
     onlyGuild: boolean;
     botAdmin: boolean;
@@ -70,21 +80,6 @@ export type CommandInfo = {
   path: string;
   command: CommandType;
 };
-
-export type CommandBuilder = Record<
-  string,
-  | SlashCommandBuilder
-  | Record<
-      string,
-      | SlashCommandSubcommandBuilder
-      | Record<string, SlashCommandSubcommandBuilder>
-    >
->;
-
-export type CommandBuilderLocalization = Record<
-  string,
-  Record<Partial<'name' | 'description'>, LocalizationMap> | null
->;
 
 export class Command {
   private static allCommands: CommandInfo[] = [];
@@ -111,175 +106,195 @@ export class Command {
     if (this.commands.length < 1)
       this.commands = (await this.getAllCommands()).filter(
         (command) =>
-          !command.command.guildId || command.command.guildId.length < 1,
+          !command.command.options?.guildId ||
+          command.command.options?.guildId.length < 1,
       );
     return this.commands;
   }
 
-  static async getGuildCommands(sorted: boolean = true) {
+  static async getGuildCommands<T extends boolean>(
+    sorted: T = true as T,
+  ): Promise<T extends true ? { [x: string]: CommandInfo[] } : CommandInfo[]> {
     if (this.guildCommands.length < 1)
       this.guildCommands = (await this.getAllCommands()).filter(
         (command) =>
-          command.command.guildId && command.command.guildId.length > 0,
+          command.command.options?.guildId &&
+          command.command.options?.guildId.length > 0,
       );
     if (Object.keys(this.guildCommandsSorted).length < 1)
       for (const command of this.guildCommands)
-        for (const guildId of command.command.guildId || [])
+        for (const guildId of command.command.options?.guildId || [])
           if (!this.guildCommandsSorted[guildId])
             this.guildCommandsSorted[guildId] = [command];
           else this.guildCommandsSorted[guildId].push(command);
-    return sorted ? this.guildCommandsSorted : this.guildCommands;
+    return (
+      sorted ? this.guildCommandsSorted : this.guildCommands
+    ) as T extends true ? { [x: string]: CommandInfo[] } : CommandInfo[];
   }
 
   private static getCommandLocalization(
     command: CommandType,
-    name: string,
-    length: number,
+    commandName: string,
+    nameArg: number,
   ) {
-    if (!command.localization) return null;
-    const localization: Record<'name' | 'description', LocalizationMap[]> = {
-      name: command.localization.name
-        ? Array.isArray(command.localization.name)
-          ? command.localization.name
-          : [command.localization.name]
-        : [{}],
-      description: command.localization.description
-        ? Array.isArray(command.localization.description)
-          ? command.localization.description
-          : [command.localization.description]
-        : [{}],
-    };
-    const nameList = Array.isArray(command.name)
-      ? command.name
-      : [command.name];
-    const result: Record<'name' | 'description', LocalizationMap> = {
-      name: {},
-      description: {},
-    };
-    const nameIdx = nameList.findIndex((v) => v.split(' ')[length] == name);
-    Object.keys(localization.name[nameIdx]).forEach((key) => {
-      result.name[key] =
-        localization.name[nameIdx][key].split(' ')[length] || '';
-      result.description[key] = localization.description[nameIdx][key] || '';
+    const name = Array.isArray(command.name) ? command.name : [command.name];
+    const nameLocalization = command.localization?.name
+      ? Array.isArray(command.localization.name)
+        ? command.localization.name
+        : [command.localization.name]
+      : [];
+    let descriptionLocalization = command.localization?.description
+      ? Array.isArray(command.localization.description)
+        ? command.localization.description
+        : [command.localization.description]
+      : [];
+    if (nameLocalization.length == 0 && descriptionLocalization.length == 0)
+      return null;
+    if (name.length != nameLocalization.length)
+      throw new Error(
+        `The number of names and localization names is different.\nCommand Name : '${name[0]}'`,
+      );
+    if (nameLocalization.length > 1 && descriptionLocalization.length == 1)
+      descriptionLocalization = Array(nameLocalization.length).fill(
+        descriptionLocalization[0],
+      );
+    if (nameLocalization.length != descriptionLocalization.length)
+      throw new Error(
+        `The number of localization names and localization descriptions is different.\nCommand Name : '${name[0]}'`,
+      );
+    const result: Partial<
+      Record<
+        'name_localizations' | 'description_localizations',
+        LocalizationMap
+      >
+    > = {};
+    const nameIdx = name.findIndex((v) => v.split(' ')[nameArg] == commandName);
+    if (nameIdx < 0) return null;
+    Object.keys(nameLocalization[nameIdx]).forEach((key) => {
+      if (!result.name_localizations) result.name_localizations = {};
+      result.name_localizations[key] =
+        nameLocalization[nameIdx][key].split(' ')[nameArg];
+      if (nameLocalization[nameIdx][key].split(' ').length - 1 == nameArg) {
+        if (!result.description_localizations)
+          result.description_localizations = {};
+        result.description_localizations[key] =
+          descriptionLocalization[nameIdx][key];
+      }
     });
     return result;
   }
 
-  private static setConvertedCommand(
+  private static convertCommand(
     command: CommandInfo,
-    name: string,
-    length: number,
-  ) {
-    const nameList = Array.isArray(command.command.name)
+    commandName: string,
+    nameArg: number,
+  ): Omit<APIApplicationCommandSubcommandOption, 'type'> {
+    const name = Array.isArray(command.command.name)
       ? command.command.name
       : [command.command.name];
-    const description = command.command.description
+    let description = command.command.description
       ? Array.isArray(command.command.description)
         ? command.command.description
         : [command.command.description]
       : [];
-    const descriptionIdx = nameList.findIndex(
-      (v) => v.split(' ')[length] == name,
+    if (name.length > 1 && description.length == 1)
+      description = Array(name.length).fill(description[0]);
+    if (name.length != description.length)
+      throw new Error(
+        `The number of names and descriptions is different.\nCommand Name : '${name[0]}'`,
+      );
+    const descriptionIdx = name.findIndex(
+      (v) => v.split(' ')[nameArg] == commandName,
     );
-    const builder = (
-      length == 0
-        ? new SlashCommandBuilder()
-        : new SlashCommandSubcommandBuilder()
-    ).setName(name);
-    if (descriptionIdx != -1)
-      builder.setDescription(description[descriptionIdx]);
-    const localization = this.getCommandLocalization(
-      command.command,
-      name,
-      length,
-    );
-    if (localization?.name)
-      for (const key of Object.keys(localization.name))
-        if (localization.name[key].length > 0)
-          builder.setNameLocalization(
-            key as LocaleString,
-            localization.name[key],
-          );
-    if (localization?.description)
-      for (const key of Object.keys(localization.description))
-        if (localization.description[key].length > 0)
-          builder.setDescriptionLocalization(
-            key as LocaleString,
-            localization.description[key],
-          );
-    return command.command.builder ? command.command.builder(builder) : builder;
+    if (descriptionIdx < 0)
+      throw new Error(
+        `Command Name is not valid.\nCommand Name : '${name[0]}', Search Name : '${commandName}'`,
+      );
+    return {
+      ...(command.command.command
+        ? typeof command.command.command == 'function'
+          ? command.command
+              .command(
+                new SlashCommandSubcommandBuilder()
+                  .setName('temp')
+                  .setDescription('temp'),
+              )
+              .toJSON()
+          : command.command.command
+        : null),
+      name: name[descriptionIdx].split(' ')[nameArg],
+      description: description[descriptionIdx],
+      ...this.getCommandLocalization(command.command, commandName, nameArg),
+    };
   }
 
-  static convertCommand(commands: CommandInfo[]) {
-    const resultObject: CommandBuilder = {};
-    const localization: CommandBuilderLocalization = {};
-    for (const command of commands) {
-      const nameLength = Array.isArray(command.command.name)
-        ? command.command.name.length
-        : 1;
-      const localizationLength = Array.isArray(command.command.localization)
-        ? command.command.localization.length
-        : 1;
-      if (command.command.localization && nameLength != localizationLength)
-        throw new Error(
-          'The Command Name length is different from the Localization length.',
-        );
-      for (const name of Array.isArray(command.command.name)
+  private static convertAllCommands(
+    commands: CommandInfo[],
+  ): RESTPostAPIChatInputApplicationCommandsJSONBody[] {
+    const result: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
+    for (const command of commands)
+      for (const name of (Array.isArray(command.command.name)
         ? command.command.name
-        : [command.command.name]) {
-        const nameList = name.split(' ');
-        if (nameList.length >= 2 && !resultObject[nameList[0]])
-          resultObject[nameList[0]] = {};
-        if (nameList.length == 3 && !resultObject[nameList[0]][nameList[1]])
-          resultObject[nameList[0]][nameList[1]] = {};
-        if (nameList.length >= 2)
-          localization[nameList[0]] = this.getCommandLocalization(
-            command.command,
-            nameList[0],
-            0,
-          );
-        if (nameList.length == 1)
-          resultObject[nameList[0]] = this.setConvertedCommand(
-            command,
-            nameList[0],
-            0,
-          );
-        else if (nameList.length == 2)
-          resultObject[nameList[0]][nameList[1]] = this.setConvertedCommand(
-            command,
-            nameList[1],
-            1,
-          );
-        else {
-          localization[`${nameList[0]} ${nameList[1]}`] =
-            this.getCommandLocalization(command.command, nameList[1], 1);
-          resultObject[nameList[0]][nameList[1]][nameList[2]] =
-            this.setConvertedCommand(command, nameList[2], 2);
-        }
-      }
-    }
+        : [command.command.name]
+      ).sort((a, b) => b.split(' ').length - a.split(' ').length)) {
+        const nameArg = name.split(' ');
 
-    const result: SlashCommandBuilder[] = [];
-    for (const [key1, value1] of Object.entries(resultObject))
-      if (value1 instanceof SlashCommandBuilder) result.push(value1);
-      else {
-        const slashCommand = new SlashCommandBuilder()
-          .setName(key1)
-          .setNameLocalizations(localization[key1]?.name || {})
-          .setDescription(`'${key1}' SubCommand`);
-        for (const [key2, value2] of Object.entries(value1))
-          if (value2 instanceof SlashCommandSubcommandBuilder)
-            slashCommand.addSubcommand(value2);
-          else {
-            const subSlashCommand = new SlashCommandSubcommandGroupBuilder()
-              .setName(key2)
-              .setNameLocalizations(localization[`${key1} ${key2}`]?.name || {})
-              .setDescription(`'${key1} ${key2}' SubCommand Group`);
-            for (const value3 of Object.values(value2))
-              subSlashCommand.addSubcommand(value3);
-            slashCommand.addSubcommandGroup(subSlashCommand);
-          }
-        result.push(slashCommand);
+        // Check if the command name is valid
+        if (
+          commands.some((v) =>
+            (Array.isArray(v.command.name)
+              ? v.command.name
+              : [v.command.name]
+            ).some((w) => w == nameArg.slice(0, -1).join(' ')),
+          )
+        )
+          throw new Error(
+            `A crash occurred in the Slash Command Name.\nCurrent Command : '${name}', Conflict Command : '${nameArg.slice(0, -1).join(' ')}'`,
+          );
+
+        // Generating a Slash Command or a Slash Command Group Required to Create Slash Commands
+        if (nameArg.length > 1 && !result.find((v) => v.name == nameArg[0]))
+          result.push({
+            name: nameArg[0],
+            description: nameArg[0],
+            ...this.getCommandLocalization(command.command, nameArg[0], 0),
+            options: [],
+          });
+        if (
+          nameArg.length > 2 &&
+          !result.find((v) => v.options?.find((w) => w.name == nameArg[1]))
+        )
+          result
+            .find((v) => v.name == nameArg[0])
+            ?.options?.push({
+              type: ApplicationCommandOptionType.SubcommandGroup,
+              name: nameArg[1],
+              description: nameArg[1],
+              ...this.getCommandLocalization(command.command, nameArg[1], 1),
+              options: [],
+            });
+
+        // Create Slash Command
+        if (nameArg.length == 1)
+          result.push(this.convertCommand(command, nameArg[0], 0));
+        else
+          (nameArg.length == 2
+            ? result.find((v) => v.name == nameArg[0])
+            : (result
+                .find((v) => v.name == nameArg[0])
+                ?.options?.find(
+                  (w) =>
+                    w.name == nameArg[1] &&
+                    w.type == ApplicationCommandOptionType.SubcommandGroup,
+                ) as APIApplicationCommandSubcommandGroupOption)
+          )?.options?.push({
+            ...this.convertCommand(
+              command,
+              nameArg[nameArg.length - 1],
+              nameArg.length - 1,
+            ),
+            type: ApplicationCommandOptionType.Subcommand,
+          });
       }
     return result;
   }
@@ -303,7 +318,7 @@ export class Command {
       for (const name of Array.isArray(command.name)
         ? command.name
         : [command.name])
-        for (const guild_id of command.guildId || [])
+        for (const guild_id of command.options?.guildId || [])
           Log.debug(
             `Added ${chalk.green(name)} Command for ${chalk.blue(guild_id)} Guild (Location : ${chalk.yellow(path)})`,
           );
@@ -312,9 +327,9 @@ export class Command {
   static async registerCommand(other_commands?: any[]) {
     if (!process.env.BOT_TOKEN) throw new Error('No Bot Token');
     const rest = new REST().setToken(process.env.BOT_TOKEN);
-    const command = this.convertCommand(await this.getCommands());
+    const command = this.convertAllCommands(await this.getCommands());
     await rest.put(Routes.applicationCommands(await DiscordUtil.clientId()), {
-      body: [...command.map((v) => v.toJSON()), ...(other_commands || [])],
+      body: [...command, ...(other_commands || [])],
     });
   }
 
@@ -329,7 +344,8 @@ export class Command {
       Object.assign(guildCommands, other_commands),
     )) {
       if (!list[key]) list[key] = [];
-      if (guildCommands[key]) list[key].push(guildCommands[key].json);
+      if (guildCommands[key])
+        list[key].push(this.convertAllCommands(guildCommands[key]));
       if (other_commands && other_commands[key])
         list[key].push(other_commands[key]);
     }
