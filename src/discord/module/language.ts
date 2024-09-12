@@ -5,7 +5,27 @@ import data from '../../language/en-US.json';
 export type LanguageData = typeof data;
 
 export class Language {
+  private static locale: Record<
+    'withDefault' | 'withoutDefault',
+    LocaleString[]
+  > = { withDefault: [], withoutDefault: [] };
   private static data: Partial<Record<LocaleString, LanguageData>> = {};
+
+  static locales(includeDefault: boolean = true) {
+    if (this.locale.withDefault.length < 1)
+      this.locale.withDefault = glob
+        .sync(`${__dirname.replace(/\\/g, '/')}/../../language/*.json`)
+        .map(
+          (v) => v.replace(/\\/g, '/').split('language/')[1].split('.json')[0],
+        ) as LocaleString[];
+    if (this.locale.withoutDefault.length < 1)
+      this.locale.withoutDefault = this.locale.withDefault.filter(
+        (v) => v != 'en-US',
+      );
+    return includeDefault
+      ? this.locale.withDefault
+      : this.locale.withoutDefault;
+  }
 
   static async init() {
     const locales = glob
