@@ -1,10 +1,13 @@
-import { Cluster } from './module';
+import { Cluster, Language } from './module';
 import { Command, Event, Menu, TextCommand } from './structure';
 
 export * from './structure';
 export * from './module';
 
 export const discordInit = async () => {
+  // Register Language Data for Register Commands
+  await Language.init();
+
   // Register Commands
   await Command.registerCommand(await Menu.getMenuJSON());
   await Command.registerGuildCommand(await Menu.getGuildMenuJSON());
