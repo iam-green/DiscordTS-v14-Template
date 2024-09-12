@@ -35,19 +35,25 @@ export default new ExtendedCommand({
           )
           .addFields(
             {
-              name: Language.get(interaction.locale, 'Embed_Info_Guild_Title'),
+              name: Language.get(
+                interaction.locale,
+                'Embed_Info_Field_GuildCount_Title',
+              ),
               value: Language.get(
                 interaction.locale,
-                'Embed_Info_Guild_Value',
+                'Embed_Info_Field_GuildCount_Value',
                 promises[0].reduce((a, b) => a + b, 0),
               ),
               inline: true,
             },
             {
-              name: Language.get(interaction.locale, 'Embed_Info_User_Title'),
+              name: Language.get(
+                interaction.locale,
+                'Embed_Info_Field_UserCount_Title',
+              ),
               value: Language.get(
                 interaction.locale,
-                'Embed_Info_User_Value',
+                'Embed_Info_Field_UserCount_Value',
                 promises[1].reduce((a, b) => a + b, 0),
               ),
               inline: true,
@@ -55,20 +61,23 @@ export default new ExtendedCommand({
             {
               name: Language.get(
                 interaction.locale,
-                'Embed_Info_Cluster_Title',
+                'Embed_Info_Field_ClusterCount_Title',
               ),
               value: Language.get(
                 interaction.locale,
-                'Embed_Info_Cluster_Value',
+                'Embed_Info_Field_ClusterCount_Value',
                 client.cluster.count,
                 client.cluster.id + 1,
               ),
             },
             {
-              name: Language.get(interaction.locale, 'Embed_Info_Shard_Title'),
+              name: Language.get(
+                interaction.locale,
+                'Embed_Info_Field_ShardCount_Title',
+              ),
               value: Language.get(
                 interaction.locale,
-                'Embed_Info_Shard_Value',
+                'Embed_Info_Field_ShardCount_Value',
                 client.cluster.info.TOTAL_SHARDS,
                 interaction.guild!.shardId + 1,
               ),
