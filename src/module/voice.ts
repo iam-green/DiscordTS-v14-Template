@@ -36,7 +36,11 @@ export class Voice {
 
   static checkJoined(guild: Guild) {
     const connection = getVoiceConnection(guild.id);
-    if (!connection || !connection.joinConfig.channelId) return undefined;
+    if (!connection) return undefined;
+    if (connection.state.status == VoiceConnectionStatus.Destroyed) {
+      this.removeInfo(guild);
+      return undefined;
+    }
     return this.findInfo(guild);
   }
 
