@@ -1,8 +1,9 @@
-import { EmbedBuilder } from 'discord.js';
-import { ExtendedCommand, Language } from '../discord';
+import { ApplicationCommandType, EmbedBuilder } from 'discord.js';
+import { ExtendedApplicationCommand, Language } from '../discord';
 import { BotConfig, EmbedConfig } from '../config';
 
-export default new ExtendedCommand({
+export default new ExtendedApplicationCommand({
+  type: ApplicationCommandType.ChatInput,
   name: 'info',
   description: 'Check the bot information.',
   localization: {
@@ -11,9 +12,6 @@ export default new ExtendedCommand({
   },
   options: { onlyGuild: true },
   run: async ({ interaction, client }) => {
-    await interaction.deferReply({ ephemeral: true }).catch(() => {});
-    if (!interaction.deferred) return;
-
     const promises = await Promise.all([
       (client.cluster.fetchClientValues('guilds.cache.size') || []) as Promise<
         number[]
@@ -23,73 +21,76 @@ export default new ExtendedCommand({
       ) || []) as Promise<number[]>,
     ]);
 
-    return await interaction.editReply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle(
-            Language.get(
-              interaction.locale,
-              'Embed_Info_Title',
-              BotConfig.NAME,
-            ),
-          )
-          .addFields(
-            {
-              name: Language.get(
+    return await interaction
+      .reply({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle(
+              Language.get(
                 interaction.locale,
-                'Embed_Info_Field_GuildCount_Title',
+                'Embed_Info_Title',
+                BotConfig.NAME,
               ),
-              value: Language.get(
-                interaction.locale,
-                'Embed_Info_Field_GuildCount_Value',
-                promises[0].reduce((a, b) => a + b, 0),
-              ),
-              inline: true,
-            },
-            {
-              name: Language.get(
-                interaction.locale,
-                'Embed_Info_Field_UserCount_Title',
-              ),
-              value: Language.get(
-                interaction.locale,
-                'Embed_Info_Field_UserCount_Value',
-                promises[1].reduce((a, b) => a + b, 0),
-              ),
-              inline: true,
-            },
-            {
-              name: Language.get(
-                interaction.locale,
-                'Embed_Info_Field_ClusterCount_Title',
-              ),
-              value: Language.get(
-                interaction.locale,
-                'Embed_Info_Field_ClusterCount_Value',
-                client.cluster.count,
-                client.cluster.id + 1,
-              ),
-            },
-            {
-              name: Language.get(
-                interaction.locale,
-                'Embed_Info_Field_ShardCount_Title',
-              ),
-              value: Language.get(
-                interaction.locale,
-                'Embed_Info_Field_ShardCount_Value',
-                client.cluster.info.TOTAL_SHARDS,
-                interaction.guild!.shardId + 1,
-              ),
-            },
-          )
-          .setColor(EmbedConfig.SUCCESS_COLOR)
-          .setFooter({
-            text: interaction.user.tag,
-            iconURL: interaction.user.avatarURL() || undefined,
-          })
-          .setTimestamp(),
-      ],
-    });
+            )
+            .addFields(
+              {
+                name: Language.get(
+                  interaction.locale,
+                  'Embed_Info_Field_GuildCount_Title',
+                ),
+                value: Language.get(
+                  interaction.locale,
+                  'Embed_Info_Field_GuildCount_Value',
+                  promises[0].reduce((a, b) => a + b, 0),
+                ),
+                inline: true,
+              },
+              {
+                name: Language.get(
+                  interaction.locale,
+                  'Embed_Info_Field_UserCount_Title',
+                ),
+                value: Language.get(
+                  interaction.locale,
+                  'Embed_Info_Field_UserCount_Value',
+                  promises[1].reduce((a, b) => a + b, 0),
+                ),
+                inline: true,
+              },
+              {
+                name: Language.get(
+                  interaction.locale,
+                  'Embed_Info_Field_ClusterCount_Title',
+                ),
+                value: Language.get(
+                  interaction.locale,
+                  'Embed_Info_Field_ClusterCount_Value',
+                  client.cluster.count,
+                  client.cluster.id + 1,
+                ),
+              },
+              {
+                name: Language.get(
+                  interaction.locale,
+                  'Embed_Info_Field_ShardCount_Title',
+                ),
+                value: Language.get(
+                  interaction.locale,
+                  'Embed_Info_Field_ShardCount_Value',
+                  client.cluster.info.TOTAL_SHARDS,
+                  interaction.guild!.shardId + 1,
+                ),
+              },
+            )
+            .setColor(EmbedConfig.SUCCESS_COLOR)
+            .setFooter({
+              text: interaction.user.tag,
+              iconURL: interaction.user.avatarURL() || undefined,
+            })
+            .setTimestamp(),
+        ],
+        ephemeral: true,
+      })
+      .catch(() => {});
   },
 });

@@ -1,5 +1,5 @@
 import { Cluster, Language } from './module';
-import { Command, Event, Menu, TextCommand } from './structure';
+import { ApplicationCommand, Event, TextCommand } from './structure';
 
 export * from './structure';
 export * from './module';
@@ -8,15 +8,14 @@ export const discordInit = async () => {
   // Register Language Data for Register Commands
   await Language.init();
 
-  // Register Commands
-  await Command.registerCommand(await Menu.getMenuJSON());
-  await Command.registerGuildCommand(await Menu.getGuildMenuJSON());
+  // Register Application Commands
+  await ApplicationCommand.registerCommand();
+  await ApplicationCommand.registerGuildCommand();
 
   // Log Loaded Commands & Events & Menus
   await Event.logEvents();
-  await Menu.logMenus();
   await TextCommand.logCommands();
-  await Command.logCommands();
+  await ApplicationCommand.logCommands();
 
   // Spawn Discord Client Cluster
   await Cluster.spawn();

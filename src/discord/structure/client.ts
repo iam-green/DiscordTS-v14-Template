@@ -1,8 +1,10 @@
 import {
+  ApplicationCommandType,
   BaseMessageOptions,
   CacheType,
   Client,
   ClientOptions,
+  CommandInteraction,
   CommandInteractionOptionResolver,
   EmbedBuilder,
   Events,
@@ -16,12 +18,11 @@ import {
 } from 'discord.js';
 import { Log, TimeoutMessage } from '../../module';
 import { ClusterClient } from 'discord-hybrid-sharding';
-import { Command, ExtendedInteraction } from './command';
+import { ApplicationCommand, ExtendedInteraction } from './applicationCommand';
 import { Event } from './event';
 import { DiscordUtil, Language, LanguageData } from '../module';
 import { BotConfig, EmbedConfig } from '../../config';
 import chalk from 'chalk';
-import { Menu } from './menu';
 import { TextCommand } from './textCommand';
 
 export class ExtendedClient extends Client {
@@ -48,14 +49,13 @@ export class ExtendedClient extends Client {
     await this.addCommands();
     await this.addTextCommands();
     await this.addEvents();
-    await this.addMenus();
     this.on('shardReady', async (id) =>
       Log.info(`${this.prefix} Shard ${chalk.green(`#${id}`)} is ready!`),
     );
   }
 
   private async addAutoComplete() {
-    const commands = await Command.getAllCommands();
+    const commands = await ApplicationCommand.getAllCommands();
     this.on(Events.InteractionCreate, async (interaction) => {
       if (!interaction.isAutocomplete()) return;
 
@@ -80,9 +80,19 @@ export class ExtendedClient extends Client {
   }
 
   private async addCommands() {
-    const commands = await Command.getAllCommands();
+    const commands = await ApplicationCommand.getAllCommands();
     this.on(Events.InteractionCreate, async (interaction) => {
-      if (!interaction.isChatInputCommand()) return;
+      if (
+        !interaction.isChatInputCommand() &&
+        !interaction.isContextMenuCommand()
+      )
+        return;
+
+      const type = interaction.isChatInputCommand()
+        ? ApplicationCommandType.ChatInput
+        : interaction.isMessageContextMenuCommand()
+          ? ApplicationCommandType.Message
+          : ApplicationCommandType.User;
 
       // Add Locale
       if (
@@ -94,12 +104,18 @@ export class ExtendedClient extends Client {
       // Find Command
       const name = [
         interaction.commandName,
-        interaction.options.getSubcommandGroup(false),
-        interaction.options.getSubcommand(false),
+        interaction.isChatInputCommand()
+          ? interaction.options.getSubcommandGroup(false)
+          : undefined,
+        interaction.isChatInputCommand()
+          ? interaction.options.getSubcommand(false)
+          : undefined,
       ]
         .filter((v) => v)
         .join(' ');
-      const command = commands.find((c) => c.command.name == name)?.command;
+      const command = commands.find(
+        (c) => c.command.type == type && c.command.name == name,
+      )?.command;
       if (!command) return;
 
       // Check Options
@@ -108,13 +124,21 @@ export class ExtendedClient extends Client {
         null,
         command.options,
       );
-      if (validate) return interaction.reply(validate);
+      if (validate) return await interaction.reply(validate).catch(() => {});
 
       // Run Command
       command.run({
-        args: interaction.options as CommandInteractionOptionResolver,
+        args:
+          command.type == ApplicationCommandType.ChatInput
+            ? (interaction.options as CommandInteractionOptionResolver)
+            : undefined,
         client: this,
-        interaction: interaction as ExtendedInteraction,
+        interaction: interaction as ExtendedInteraction &
+          (
+            | CommandInteraction
+            | UserContextMenuCommandInteraction<CacheType>
+            | MessageContextMenuCommandInteraction<CacheType>
+          ),
       });
     });
   }
@@ -125,36 +149,6 @@ export class ExtendedClient extends Client {
       this[event.once ? 'once' : 'on'](event.event, (...args) =>
         event.run(this, ...args),
       );
-  }
-
-  private async addMenus() {
-    const menus = await Menu.getAllMenus();
-    this.on(Events.InteractionCreate, async (interaction) => {
-      if (!interaction.isContextMenuCommand()) return;
-
-      // Find Menu
-      const menu = menus.find((v) =>
-        v.menu.name.includes(interaction.commandName),
-      )?.menu;
-      if (!menu) return;
-
-      // Check Options
-      const validate = await this.checkOptions(interaction, null, {
-        ...menu.options,
-        permission: menu.permission,
-      });
-      if (validate) return interaction.reply(validate);
-
-      // Run Menu
-      menu.run({
-        client: this,
-        interaction: interaction as ExtendedInteraction &
-          (
-            | UserContextMenuCommandInteraction<CacheType>
-            | MessageContextMenuCommandInteraction<CacheType>
-          ),
-      });
-    });
   }
 
   private async addTextCommands() {
@@ -190,8 +184,8 @@ export class ExtendedClient extends Client {
         },
       );
       if (validate) {
-        const replied = await message.reply(validate);
-        TimeoutMessage.set(replied, 1000 * 5);
+        const replied = await message.reply(validate).catch(() => {});
+        if (replied) TimeoutMessage.set(replied, 1000 * 5);
         return;
       }
 
