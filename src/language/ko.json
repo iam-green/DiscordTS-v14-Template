@@ -47,6 +47,8 @@
   "Permission_UseExternalSounds": "외부 사운드보드 사용",
   "Permission_SendVoiceMessages": "음성 메시지 보내기",
   "Permission_SendPolls": "투표 만들기",
+  "SubCommand_Description": "`{0}`은(는) SubCommand로 이루어져 있습니다.",
+  "SubCommandGroup_Description": "`{0} {1}`은(는) SubCommand Group으로 이루어져 있습니다.",
   "Command_Info_Name": "정보",
   "Command_Info_Description": "봇 정보를 확인할 수 있습니다",
   "Embed_Warn_CommandCooldown_Title": ":warning: 명령어 쿨다운",

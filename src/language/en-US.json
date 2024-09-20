@@ -47,6 +47,8 @@
   "Permission_UseExternalSounds": "Use External Sounds",
   "Permission_SendVoiceMessages": "Send Voice Messages",
   "Permission_SendPolls": "Create Polls",
+  "SubCommand_Description": "The `{0}` is made up of SubCommand",
+  "SubCommandGroup_Description": "The `{0} {1}` is made up of SubCommand Group",
   "Command_Info_Name": "info",
   "Command_Info_Description": "You can view bot information",
   "Embed_Warn_CommandCooldown_Title": ":warning: Command Cooldown",

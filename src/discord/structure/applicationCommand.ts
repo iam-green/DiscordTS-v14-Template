@@ -23,7 +23,7 @@ import { ExtendedClient } from './client';
 import { glob } from 'glob';
 import chalk from 'chalk';
 import { Log } from '../../module';
-import { DiscordUtil } from '../module';
+import { DiscordUtil, Language } from '../module';
 
 export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
   constructor(commandOptions: CommandType<Type>) {
@@ -329,13 +329,22 @@ export class ApplicationCommand {
         )
           result.push({
             name: nameArg[0],
-            description: nameArg[0],
+            description: Language.get(
+              'en-US',
+              'SubCommand_Description',
+              nameArg[0],
+            ),
             ...this.getCommandLocalization(
               command.command.type,
               command.command,
               nameArg[0],
               0,
             ),
+            description_localizations: Language.locales(false)
+              .map((v) => ({
+                [v]: Language.get(v, 'SubCommand_Description', nameArg[0]),
+              }))
+              .reduce((a, b) => ({ ...a, ...b })),
             options: [],
           });
         if (
@@ -348,13 +357,28 @@ export class ApplicationCommand {
             ?.options?.push({
               type: ApplicationCommandOptionType.SubcommandGroup,
               name: nameArg[1],
-              description: nameArg[1],
+              description: Language.get(
+                'en-US',
+                'SubCommandGroup_Description',
+                nameArg[0],
+                nameArg[1],
+              ),
               ...this.getCommandLocalization(
                 command.command.type,
                 command.command,
                 nameArg[1],
                 1,
               ),
+              description_localizations: Language.locales(false)
+                .map((v) => ({
+                  [v]: Language.get(
+                    v,
+                    'SubCommandGroup_Description',
+                    nameArg[0],
+                    nameArg[1],
+                  ),
+                }))
+                .reduce((a, b) => ({ ...a, ...b })),
               options: [],
             });
 
