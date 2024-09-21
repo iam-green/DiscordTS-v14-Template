@@ -230,10 +230,7 @@ export class ExtendedClient extends Client {
       const validate = await this.checkOptions(
         message,
         Array.isArray(command.name) ? command.name[0] : command.name,
-        {
-          ...command.options,
-          permission: command.permission,
-        },
+        command.options,
       );
       if (validate) {
         const replied = await message.reply(validate).catch(() => {});

@@ -7,11 +7,11 @@ import { Log } from '../../module';
 export type TextCommandType<InGuild extends boolean> = {
   name: string | string[];
   guildId?: string[];
-  permission?: Partial<{
-    user: PermissionResolvable[];
-    bot: PermissionResolvable[];
-  }>;
   options?: Partial<{
+    permission: Partial<{
+      user: PermissionResolvable[];
+      bot: PermissionResolvable[];
+    }>;
     cooldown: number;
     onlyGuild: InGuild;
     botAdmin: boolean;
