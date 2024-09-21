@@ -6,6 +6,7 @@ import {
   ClientOptions,
   CommandInteraction,
   CommandInteractionOptionResolver,
+  ComponentType,
   EmbedBuilder,
   Events,
   Interaction,
@@ -27,6 +28,7 @@ import { DiscordUtil, Language, LanguageData } from '../module';
 import { BotConfig, EmbedConfig } from '../../config';
 import chalk from 'chalk';
 import { ExtendedTextCommand } from './textCommand';
+import { ComponentRunInteractionTypeMap, ExtendedComponent } from './component';
 
 export class ExtendedClient extends Client {
   cluster = new ClusterClient(this);
@@ -52,6 +54,7 @@ export class ExtendedClient extends Client {
     await this.addCommands();
     await this.addTextCommands();
     await this.addEvents();
+    await this.addComponents();
     this.on('shardReady', async (id) =>
       Log.info(`${this.prefix} Shard ${chalk.green(`#${id}`)} is ready!`),
     );
@@ -142,6 +145,52 @@ export class ExtendedClient extends Client {
             | UserContextMenuCommandInteraction<CacheType>
             | MessageContextMenuCommandInteraction<CacheType>
           ),
+      });
+    });
+  }
+
+  private async addComponents() {
+    this.on(Events.InteractionCreate, async (interaction) => {
+      if (!('customId' in interaction)) return;
+      const type = interaction.isButton()
+        ? ComponentType.Button
+        : interaction.isStringSelectMenu()
+          ? ComponentType.StringSelect
+          : interaction.isChannelSelectMenu()
+            ? ComponentType.ChannelSelect
+            : interaction.isRoleSelectMenu()
+              ? ComponentType.RoleSelect
+              : interaction.isMentionableSelectMenu()
+                ? ComponentType.MentionableSelect
+                : interaction.isUserSelectMenu()
+                  ? ComponentType.UserSelect
+                  : ComponentType.TextInput;
+
+      // Remove Expired Component
+      ExtendedComponent.removeExpired();
+
+      // Find Generated Component
+      const component = ExtendedComponent.list.find(
+        (v) => v.component.type == type && v.custom_id == interaction.customId,
+      );
+      if (!component) return;
+
+      // Check Options
+      const validate = await this.checkOptions(
+        interaction,
+        null,
+        component.component.options,
+      );
+      if (validate) return await interaction.reply(validate).catch(() => {});
+
+      // Set Component Expire
+      if (component.component.options?.expire)
+        component.expire = Date.now() + component.component.options.expire;
+
+      // Run Component
+      component.component.run({
+        client: this,
+        interaction: interaction as ComponentRunInteractionTypeMap[typeof type],
       });
     });
   }
