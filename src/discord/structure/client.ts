@@ -18,12 +18,15 @@ import {
 } from 'discord.js';
 import { Log, TimeoutMessage } from '../../module';
 import { ClusterClient } from 'discord-hybrid-sharding';
-import { ApplicationCommand, ExtendedInteraction } from './applicationCommand';
-import { Event } from './event';
+import {
+  ExtendedApplicationCommand,
+  ExtendedInteraction,
+} from './applicationCommand';
+import { ExtendedEvent } from './event';
 import { DiscordUtil, Language, LanguageData } from '../module';
 import { BotConfig, EmbedConfig } from '../../config';
 import chalk from 'chalk';
-import { TextCommand } from './textCommand';
+import { ExtendedTextCommand } from './textCommand';
 
 export class ExtendedClient extends Client {
   cluster = new ClusterClient(this);
@@ -55,7 +58,7 @@ export class ExtendedClient extends Client {
   }
 
   private async addAutoComplete() {
-    const commands = await ApplicationCommand.getAllCommands();
+    const commands = await ExtendedApplicationCommand.getAllCommands();
     this.on(Events.InteractionCreate, async (interaction) => {
       if (!interaction.isAutocomplete()) return;
 
@@ -80,7 +83,7 @@ export class ExtendedClient extends Client {
   }
 
   private async addCommands() {
-    const commands = await ApplicationCommand.getAllCommands();
+    const commands = await ExtendedApplicationCommand.getAllCommands();
     this.on(Events.InteractionCreate, async (interaction) => {
       if (
         !interaction.isChatInputCommand() &&
@@ -144,7 +147,7 @@ export class ExtendedClient extends Client {
   }
 
   private async addEvents() {
-    const events = await Event.getEvents();
+    const events = await ExtendedEvent.getEvents();
     for (const { event } of events)
       this[event.once ? 'once' : 'on'](event.event, (...args) =>
         event.run(this, ...args),
@@ -152,7 +155,7 @@ export class ExtendedClient extends Client {
   }
 
   private async addTextCommands() {
-    const commnads = await TextCommand.getCommands();
+    const commnads = await ExtendedTextCommand.getCommands();
     this.on(Events.MessageCreate, async (message) => {
       if (message.author.bot) return;
 

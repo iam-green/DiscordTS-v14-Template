@@ -19,9 +19,7 @@ export class ExtendedEvent<Key extends keyof ClientEvents> {
   constructor(eventOptions: EventType<Key>) {
     Object.assign(this, eventOptions);
   }
-}
 
-export class Event {
   static async getEvents() {
     const result: { path: string; event: EventType<keyof ClientEvents> }[] = [];
     const events = glob.sync(

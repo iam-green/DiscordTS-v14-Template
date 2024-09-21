@@ -4,12 +4,6 @@ import { glob } from 'glob';
 import chalk from 'chalk';
 import { Log } from '../../module';
 
-export class ExtendedTextCommand<InGuild extends boolean> {
-  constructor(textCommandOptions: TextCommandType<InGuild>) {
-    Object.assign(this, textCommandOptions);
-  }
-}
-
 export type TextCommandType<InGuild extends boolean> = {
   name: string | string[];
   guildId?: string[];
@@ -31,7 +25,11 @@ export type TextCommandType<InGuild extends boolean> = {
   }) => void;
 };
 
-export class TextCommand {
+export class ExtendedTextCommand<InGuild extends boolean> {
+  constructor(textCommandOptions: TextCommandType<InGuild>) {
+    Object.assign(this, textCommandOptions);
+  }
+
   static async getCommands() {
     const result: { path: string; command: TextCommandType<boolean> }[] = [];
     const events = glob.sync(

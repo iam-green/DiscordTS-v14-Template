@@ -25,12 +25,6 @@ import chalk from 'chalk';
 import { Log } from '../../module';
 import { DiscordUtil, Language } from '../module';
 
-export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
-  constructor(commandOptions: CommandType<Type>) {
-    Object.assign(this, commandOptions);
-  }
-}
-
 export type AutoCompleteOptions = {
   client: ExtendedClient;
   interaction: AutocompleteInteraction;
@@ -103,7 +97,11 @@ export type CommandInfo<Type extends ApplicationCommandType> = {
   command: CommandType<Type>;
 };
 
-export class ApplicationCommand {
+export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
+  constructor(commandOptions: CommandType<Type>) {
+    Object.assign(this, commandOptions);
+  }
+
   private static allCommands: CommandInfo<ApplicationCommandType>[] = [];
   private static commands: CommandInfo<ApplicationCommandType>[] = [];
   private static guildCommands: CommandInfo<ApplicationCommandType>[] = [];
