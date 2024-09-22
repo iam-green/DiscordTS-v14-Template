@@ -100,6 +100,7 @@ export type ComponentType<Type extends SupportComponentType> = {
   component: Type extends keyof ComponentComponentTypeMap
     ? ComponentComponentTypeMap[Type]
     : never;
+  once?: boolean;
   options?: Partial<{
     expire: number;
     guildId: string[];

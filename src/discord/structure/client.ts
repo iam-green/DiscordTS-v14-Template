@@ -192,6 +192,15 @@ export class ExtendedClient extends Client {
         client: this,
         interaction: interaction as ComponentRunInteractionTypeMap[typeof type],
       });
+
+      // Remove Once Component
+      if (component.component.once)
+        ExtendedComponent.list.splice(
+          ExtendedComponent.list.findIndex(
+            (v) => v.custom_id == interaction.customId,
+          ),
+          1,
+        );
     });
   }
 
