@@ -209,7 +209,9 @@ export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
       'name_localizations' | 'description_localizations'
     > = {};
     const nameIdx = name.findIndex((v) =>
-      isChatInput && nameArg ? v.split(' ')[nameArg] : v == commandName,
+      isChatInput && typeof nameArg == 'number'
+        ? v.split(' ')[nameArg]
+        : v == commandName,
     );
     if (nameIdx < 0) return null;
     Object.keys(nameLocalization[nameIdx]).forEach((key) => {
@@ -273,7 +275,10 @@ export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
               .toJSON()
           : command.command.command
         : null),
-      name: isChatInput && nameArg ? name[idx].split(' ')[nameArg] : name[idx],
+      name:
+        isChatInput && typeof nameArg == 'number'
+          ? name[idx].split(' ')[nameArg]
+          : name[idx],
       description: isChatInput ? description[idx] : undefined,
       ...this.getCommandLocalization(
         command.command.type,
