@@ -18,6 +18,7 @@ export interface VoiceInfo {
     adding: boolean;
     voiceAttempt: number;
     voiceRestarting: boolean;
+    rejoinRetry: number;
   };
 }
 

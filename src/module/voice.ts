@@ -61,7 +61,12 @@ export class Voice {
       voice_id: voice.channel.id,
       queue: [],
       option,
-      status: { adding: false, voiceAttempt: 1, voiceRestarting: false },
+      status: {
+        adding: false,
+        voiceAttempt: 1,
+        voiceRestarting: false,
+        rejoinRetry: 0,
+      },
     });
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
@@ -104,13 +109,25 @@ export class Voice {
         newState.reason == VoiceConnectionDisconnectReason.WebSocketClose &&
         ![4006, 4014].includes(newState.closeCode)
       )
-        connection.rejoin();
+        if (voice.status.rejoinRetry < 3) {
+          connection.rejoin();
+          voice.status.rejoinRetry++;
+        } else {
+          connection.destroy();
+          this.quit(guild);
+        }
     });
 
     // Voice Connection Error Handling
     connection.on('error', async () => {
       if (connection.state.status != VoiceConnectionStatus.Destroyed)
-        connection.rejoin();
+        if (voice.status.rejoinRetry < 3) {
+          connection.rejoin();
+          voice.status.rejoinRetry++;
+        } else {
+          connection.destroy();
+          this.quit(guild);
+        }
     });
 
     // Voice Player Error Handling
@@ -131,6 +148,7 @@ export class Voice {
       voice.status.voiceAttempt = 1;
       if (voice.status.adding) return;
       voice.status.adding = true;
+      voice.status.rejoinRetry = 0;
       await new Promise((resolve) => setTimeout(resolve, 0));
       if (voice.option?.repeat) voice.queue.push(voice.queue[0]);
       voice.queue.shift();
