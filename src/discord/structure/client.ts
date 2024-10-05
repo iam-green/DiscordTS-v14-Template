@@ -323,7 +323,7 @@ export class ExtendedClient extends Client {
                 Language.get(
                   locale,
                   'Embed_Warn_CommandCooldown_Description',
-                  `\`${Math.round((cooldown - now) / 100) / 10}\``,
+                  (cooldown / 1000) | 0,
                 ),
               )
               .setColor(EmbedConfig.WARN_COLOR)

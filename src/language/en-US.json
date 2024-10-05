@@ -52,7 +52,7 @@
   "Command_Info_Name": "info",
   "Command_Info_Description": "You can view bot information",
   "Embed_Warn_CommandCooldown_Title": ":warning: Command Cooldown",
-  "Embed_Warn_CommandCooldown_Description": "You can use this command again after {0} seconds.",
+  "Embed_Warn_CommandCooldown_Description": "You can use this command again after <t:{0}:R>.",
   "Embed_Warn_UserRequirePermission_Title": ":warning: No User Permission",
   "Embed_Warn_UserRequirePermission_Description": "You need the {0} permission to use this command.",
   "Embed_Warn_BotRequirePermission_Title": ":warning: No Bot Permission",

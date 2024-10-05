@@ -52,7 +52,7 @@
   "Command_Info_Name": "정보",
   "Command_Info_Description": "봇 정보를 확인할 수 있습니다",
   "Embed_Warn_CommandCooldown_Title": ":warning: 명령어 쿨다운",
-  "Embed_Warn_CommandCooldown_Description": "이 명령어는 {0}초 뒤에 다시 사용할 수 있습니다.",
+  "Embed_Warn_CommandCooldown_Description": "이 명령어는 <t:{0}:R>에 다시 사용할 수 있습니다.",
   "Embed_Warn_UserRequirePermission_Title": ":warning: 유저 권한 없음",
   "Embed_Warn_UserRequirePermission_Description": "이 명령어를 사용하려면 {0} 권한이 필요합니다.",
   "Embed_Warn_BotRequirePermission_Title": ":warning: 봇 권한 없음",
