@@ -2,6 +2,7 @@ import {
   ApplicationCommandType,
   BaseMessageOptions,
   CacheType,
+  ChannelType,
   Client,
   ClientOptions,
   CommandInteraction,
@@ -14,6 +15,7 @@ import {
   LocaleString,
   Message,
   MessageContextMenuCommandInteraction,
+  PermissionFlagsBits,
   PermissionResolvable,
   UserContextMenuCommandInteraction,
 } from 'discord.js';
@@ -234,6 +236,16 @@ export class ExtendedClient extends Client {
         return false;
       })?.command;
       if (!command) return;
+
+      // Check Send Message Permission
+      if (
+        message.guild?.members?.me &&
+        message.channel.type != ChannelType.DM &&
+        !message.channel
+          ?.permissionsFor(message.guild.members.me)
+          ?.has(PermissionFlagsBits.SendMessages)
+      )
+        return;
 
       // Check Options
       const validate = await this.checkOptions(
