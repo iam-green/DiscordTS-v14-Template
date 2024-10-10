@@ -37,7 +37,12 @@ export class Voice {
   static checkJoined(guild: Guild) {
     const connection = getVoiceConnection(guild.id);
     if (!connection) return undefined;
-    if (connection.state.status == VoiceConnectionStatus.Destroyed) {
+    if (
+      [
+        VoiceConnectionStatus.Destroyed,
+        VoiceConnectionStatus.Disconnected,
+      ].includes(connection.state.status)
+    ) {
       this.removeInfo(guild);
       return undefined;
     }
@@ -110,6 +115,7 @@ export class Voice {
         ![4006, 4014].includes(newState.closeCode)
       )
         if (voice.status.rejoinRetry < 3) {
+          await await new Promise((resolve) => setTimeout(resolve, 500));
           connection.rejoin();
           voice.status.rejoinRetry++;
         } else {
@@ -122,6 +128,7 @@ export class Voice {
     connection.on('error', async () => {
       if (connection.state.status != VoiceConnectionStatus.Destroyed)
         if (voice.status.rejoinRetry < 3) {
+          await await new Promise((resolve) => setTimeout(resolve, 500));
           connection.rejoin();
           voice.status.rejoinRetry++;
         } else {
@@ -148,7 +155,6 @@ export class Voice {
       voice.status.voiceAttempt = 1;
       if (voice.status.adding) return;
       voice.status.adding = true;
-      voice.status.rejoinRetry = 0;
       await new Promise((resolve) => setTimeout(resolve, 0));
       if (voice.option?.repeat) voice.queue.push(voice.queue[0]);
       voice.queue.shift();
