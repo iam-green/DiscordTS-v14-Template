@@ -243,7 +243,10 @@ export class ExtendedClient extends Client {
         message.channel.type != ChannelType.DM &&
         !message.channel
           ?.permissionsFor(message.guild.members.me)
-          ?.has(PermissionFlagsBits.SendMessages)
+          ?.has([
+            PermissionFlagsBits.SendMessages,
+            PermissionFlagsBits.ViewChannel,
+          ])
       )
         return;
 
