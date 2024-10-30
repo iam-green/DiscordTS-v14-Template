@@ -13,6 +13,7 @@ import {
 } from '@discordjs/voice';
 import { Log } from './log';
 import { spawn } from 'child_process';
+import { DiscordUtil } from '../discord';
 
 export class Voice {
   static list: VoiceInfo[] = [];
@@ -34,15 +35,18 @@ export class Voice {
     );
   }
 
-  static checkJoined(guild: Guild) {
+  static async checkJoined(guild: Guild) {
     const connection = getVoiceConnection(guild.id);
-    if (!connection) return undefined;
-    if (
-      [
-        VoiceConnectionStatus.Destroyed,
-        VoiceConnectionStatus.Disconnected,
-      ].includes(connection.state.status)
-    ) {
+    const voiceState = guild.members.cache.get(
+      await DiscordUtil.clientId(),
+    )?.voice;
+    if (connection && (!voiceState || !voiceState.channelId)) {
+      connection.destroy();
+      this.removeInfo(guild);
+      return undefined;
+    }
+    if (!connection && voiceState?.channelId) {
+      await voiceState.disconnect();
       this.removeInfo(guild);
       return undefined;
     }
@@ -105,7 +109,7 @@ export class Voice {
         behaviors: { noSubscriber: NoSubscriberBehavior.Play },
       });
     (voice.player as any).setMaxListeners(0);
-    this.subscribe(connection, voice, option);
+    await this.subscribe(connection, voice, option);
 
     // Voice Connection Unexpected Disconnection Handling
     connection.on('stateChange', async (_, newState) => {
@@ -115,7 +119,7 @@ export class Voice {
         ![4006, 4014].includes(newState.closeCode)
       )
         if (voice.status.rejoinRetry < 3) {
-          await await new Promise((resolve) => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
           connection.rejoin();
           voice.status.rejoinRetry++;
         } else {
@@ -128,7 +132,7 @@ export class Voice {
     connection.on('error', async () => {
       if (connection.state.status != VoiceConnectionStatus.Destroyed)
         if (voice.status.rejoinRetry < 3) {
-          await await new Promise((resolve) => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
           connection.rejoin();
           voice.status.rejoinRetry++;
         } else {
@@ -161,7 +165,8 @@ export class Voice {
       voice.queue.sort(
         (a, b) => +(a.date || new Date(0)) - +(b.date || new Date(0)),
       );
-      if (voice.queue.length > 0) this.subscribe(connection, voice, option);
+      if (voice.queue.length > 0)
+        await this.subscribe(connection, voice, option);
       voice.status.adding = false;
     });
   }
