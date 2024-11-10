@@ -8,6 +8,7 @@ import {
 export class DiscordUtil {
   private static expire = 0;
   private static client_id = '';
+  private static other_client_id = [] as string[];
   private static admin_id = [] as string[];
   private static developer_id = [] as string[];
 
@@ -26,12 +27,30 @@ export class DiscordUtil {
           .filter((v) => v.role == 'developer')
           .map((v) => v.user.id as string)
       : [];
+    this.other_client_id =
+      result.team && process.env.DISCORD_TOKEN
+        ? (
+            await (
+              await fetch(
+                'https://discord.com/api/v10/applications?with_team_applications=true',
+                { headers: { Authorization: process.env.DISCORD_TOKEN } },
+              )
+            ).json()
+          )
+            .map((v) => v.id)
+            .filter((v) => v != result.id)
+        : [];
     this.expire = Date.now() + 1000 * 60 * 60 * 4;
   }
 
   static async clientId() {
     if (this.expire < Date.now()) await this.getValues();
     return this.client_id;
+  }
+
+  static async otherClientId() {
+    if (this.expire < Date.now()) await this.getValues();
+    return this.other_client_id;
   }
 
   static async adminId() {
