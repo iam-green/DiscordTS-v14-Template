@@ -28,12 +28,12 @@ export class Discord {
           .map((v) => v.user.id as string)
       : [];
     this.other_client_id =
-      result.team && process.env.DISCORD_TOKEN
+      result.team && process.env.DISCORD_USER_TOKEN
         ? (
             await (
               await fetch(
                 `https://discord.com/api/v10/teams/${result.team.id}/applications`,
-                { headers: { Authorization: process.env.DISCORD_TOKEN } },
+                { headers: { Authorization: process.env.DISCORD_USER_TOKEN } },
               )
             ).json()
           )
