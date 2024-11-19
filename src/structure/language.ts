@@ -11,7 +11,7 @@ export class Language {
   static locales(includeDefault: boolean = true) {
     if (this.locale.length < 1)
       this.locale = glob
-        .sync(`${__dirname.replace(/\\/g, '/')}/../../language/*.json`)
+        .sync(`${__dirname.replace(/\\/g, '/')}/../language/*.json`)
         .map(
           (v) => v.replace(/\\/g, '/').split('language/')[1].split('.json')[0],
         ) as LocaleString[];
@@ -24,7 +24,10 @@ export class Language {
     const localeList = Object.values(Locale).map((v) => v.toString());
     for (const locale of this.locales())
       if (localeList.includes(locale))
-        this.data.set(locale, await import(`../../language/${locale}.json`));
+        this.data.set(
+          locale,
+          (await import(`../language/${locale}.json`)).default,
+        );
   }
 
   static get(
@@ -32,9 +35,11 @@ export class Language {
     data: keyof LanguageData,
     ...formats: any[]
   ) {
-    if (Object.keys(this.data).length < 1) return '';
+    if (this.data.size < 1) return '';
     const result =
-      this.data[locale]?.[data] ?? this.data['en-US']?.[data] ?? '';
+      this.data.get(locale)?.[data] ??
+      this.data.get(BotConfig.DEFAULT_LANGUAGE)?.[data] ??
+      '';
     if (!/{(\d+)}/g.test(result)) return result;
     return result.replace(/{(\d+)}/g, (match, number) => {
       return typeof formats[number] != 'undefined' ? formats[number] : match;
