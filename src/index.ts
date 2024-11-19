@@ -1,8 +1,7 @@
 import 'dotenv/config';
-import { databaseInit } from './database';
+import { discordInit } from './loader';
 
 async function bootstrap() {
-  await databaseInit();
-  // Input Code Here
+  await discordInit();
 }
 bootstrap();
