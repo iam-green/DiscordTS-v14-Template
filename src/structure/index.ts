@@ -4,3 +4,4 @@ export * from './client';
 export * from './text_command';
 export * from './application_command';
 export * from './component';
+export * from './event';
