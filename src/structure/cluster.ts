@@ -6,7 +6,7 @@ export class Cluster {
 
   static async spawn() {
     this.manager = new ClusterManager(
-      `${__dirname}/init.${process.argv[1].endsWith('.ts') ? 'ts' : 'js'}`,
+      `${__dirname}/../loader/cluster.${process.argv[1].endsWith('.ts') ? 'ts' : 'js'}`,
       {
         token: process.env.BOT_TOKEN,
         ...ClusterConfig,
