@@ -44,6 +44,9 @@ export class ExtendedClient extends Client {
 
   async start() {
     await Language.init();
+    await ExtendedEvent.init();
+    await ExtendedTextCommand.init();
+    await ExtendedApplicationCommand.init();
     await this.registerModules();
     await this.login(process.env.BOT_TOKEN);
     Log.info(`${this.prefix} Logged in as ${chalk.green(this.user?.tag)}!`);
