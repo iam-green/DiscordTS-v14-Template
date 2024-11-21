@@ -6,6 +6,7 @@ import {
   ApplicationCommandType,
   AutocompleteInteraction,
   CacheType,
+  ChatInputCommandInteraction,
   CommandInteraction,
   CommandInteractionOptionResolver,
   LocalizationMap,
@@ -37,7 +38,7 @@ export type RunOptions<Type extends ApplicationCommandType> = {
     ? UserContextMenuCommandInteraction<CacheType>
     : Type extends ApplicationCommandType.Message
       ? MessageContextMenuCommandInteraction<CacheType>
-      : CommandInteraction;
+      : ChatInputCommandInteraction<CacheType>;
   args: Type extends ApplicationCommandType.ChatInput
     ? CommandInteractionOptionResolver
     : undefined;

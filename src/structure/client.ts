@@ -1,11 +1,9 @@
 import {
   ApplicationCommandType,
   BaseMessageOptions,
-  CacheType,
   ChannelType,
   Client,
   ClientOptions,
-  CommandInteraction,
   CommandInteractionOptionResolver,
   ComponentType,
   EmbedBuilder,
@@ -14,10 +12,8 @@ import {
   InteractionReplyOptions,
   LocaleString,
   Message,
-  MessageContextMenuCommandInteraction,
   PermissionFlagsBits,
   PermissionResolvable,
-  UserContextMenuCommandInteraction,
 } from 'discord.js';
 import { Log, TimeoutMessage } from '../module';
 import { ClusterClient } from 'discord-hybrid-sharding';
@@ -149,11 +145,7 @@ export class ExtendedClient extends Client {
             ? (interaction.options as CommandInteractionOptionResolver)
             : undefined,
         client: this,
-        interaction: interaction.isUserContextMenuCommand()
-          ? (interaction as UserContextMenuCommandInteraction<CacheType>)
-          : interaction.isMessageContextMenuCommand()
-            ? (interaction as MessageContextMenuCommandInteraction<CacheType>)
-            : (interaction as CommandInteraction),
+        interaction,
       });
     });
   }
@@ -301,7 +293,7 @@ export class ExtendedClient extends Client {
     const locale =
       'locale' in message
         ? message.locale
-        : this.locale.get(message.author.id) ?? BotConfig.DEFAULT_LANGUAGE;
+        : (this.locale.get(message.author.id) ?? BotConfig.DEFAULT_LANGUAGE);
     const user = 'user' in message ? message.user : message.author;
     const cooldownId =
       'commandId' in message ? message.commandId : commandName || '';
