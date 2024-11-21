@@ -40,7 +40,7 @@ export class ExtendedTextCommand<InGuild extends boolean> {
 
   static async init() {
     const commandsPath = glob.sync(
-      `${__dirname.replace(/\\/g, '/')}/../../textCommand/**/*{.ts,.js}`,
+      `${__dirname.replace(/\\/g, '/')}/../textCommand/**/*{.ts,.js}`,
     );
     for (const path of commandsPath)
       if ((await import(path))?.default instanceof ExtendedTextCommand) {

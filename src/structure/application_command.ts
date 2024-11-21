@@ -7,7 +7,6 @@ import {
   AutocompleteInteraction,
   CacheType,
   ChatInputCommandInteraction,
-  CommandInteraction,
   CommandInteractionOptionResolver,
   LocalizationMap,
   MessageContextMenuCommandInteraction,
@@ -284,7 +283,7 @@ export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
         const nameArg = name.split(' ');
 
         // Check if the command name is valid
-        for (const [, { command: cmd }] of commands)
+        for (const { command: cmd } of commands.values())
           if (
             cmd.type == ApplicationCommandType.ChatInput &&
             (Array.isArray(cmd.name) ? cmd.name : [cmd.name]).some(
@@ -398,7 +397,7 @@ export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
   }
 
   static async logCommands() {
-    for (const [, { path, command }] of this.commands)
+    for (const { path, command } of this.commands.values())
       for (const name of Array.isArray(command.name)
         ? command.name
         : [command.name])
@@ -411,7 +410,7 @@ export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
         );
 
     for (const commands of this.guildCommandsSorted.values())
-      for (const [, { path, command }] of commands)
+      for (const { path, command } of commands.values())
         for (const name of Array.isArray(command.name)
           ? command.name
           : [command.name])

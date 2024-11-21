@@ -26,7 +26,7 @@ export class ExtendedEvent<Key extends keyof ClientEvents> {
   static async init() {
     if (this.list.size < 1) {
       const events = glob.sync(
-        `${__dirname.replace(/\\/g, '/')}/../../event/**/*{.ts,.js}`,
+        `${__dirname.replace(/\\/g, '/')}/../event/**/*{.ts,.js}`,
       );
       for (const path of events)
         if ((await import(path))?.default instanceof ExtendedEvent)
@@ -36,7 +36,7 @@ export class ExtendedEvent<Key extends keyof ClientEvents> {
   }
 
   static async logEvents() {
-    for (const [, { path, event }] of this.list)
+    for (const { path, event } of this.list.values())
       Log.debug(
         `Added ${chalk.green(event.event)} Event (Location : ${chalk.yellow(path)})`,
       );
