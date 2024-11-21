@@ -31,6 +31,7 @@ import { ExtendedTextCommand, TextCommandType } from './text_command';
 import { ComponentRunInteractionTypeMap, ExtendedComponent } from './component';
 
 export class ExtendedClient extends Client {
+  static client: ExtendedClient;
   cluster = new ClusterClient(this);
   private cooldown: Map<string, Map<string, number>> = new Map();
   private prefix = `${chalk.cyan('[')}Cluster ${chalk.green(
@@ -40,6 +41,7 @@ export class ExtendedClient extends Client {
 
   constructor(option: ClientOptions) {
     super(option);
+    ExtendedClient.client = this;
   }
 
   async start() {
@@ -299,7 +301,7 @@ export class ExtendedClient extends Client {
     const locale =
       'locale' in message
         ? message.locale
-        : (this.locale.get(message.author.id) ?? BotConfig.DEFAULT_LANGUAGE);
+        : this.locale.get(message.author.id) ?? BotConfig.DEFAULT_LANGUAGE;
     const user = 'user' in message ? message.user : message.author;
     const cooldownId =
       'commandId' in message ? message.commandId : commandName || '';

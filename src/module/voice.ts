@@ -12,8 +12,8 @@ import {
   VoiceConnectionStatus,
 } from '@discordjs/voice';
 import { Readable } from 'node:stream';
-import { client } from '../loader/cluster';
 import { Log } from './log';
+import { ExtendedClient } from '../structure';
 
 export interface VoiceOption {
   volume: number;
@@ -54,8 +54,8 @@ export class Voice {
     channel_id: string,
     option?: Partial<VoiceOption>,
   ) {
-    const guild = client.guilds.cache.get(guild_id);
-    if (!guild || !client.channels.cache.has(channel_id)) return;
+    const guild = ExtendedClient.client.guilds.cache.get(guild_id);
+    if (!guild) return;
     this.list.set(guild_id, {
       channel_id,
       voice: joinVoiceChannel({
