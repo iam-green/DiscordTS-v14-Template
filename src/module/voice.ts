@@ -61,8 +61,7 @@ export class Voice {
       voice: joinVoiceChannel({
         channelId: channel_id,
         guildId: guild_id,
-        adapterCreator:
-          guild.voiceAdapterCreator as DiscordGatewayAdapterCreator,
+        adapterCreator: guild.voiceAdapterCreator,
       }),
       queue: [],
       option,
