@@ -68,8 +68,8 @@ export class Discord {
   ): keyof typeof PermissionsBitField.Flags {
     if (typeof value != 'bigint' && !/^-?\d+$/.test(value.toString()))
       return value as keyof typeof PermissionsBitField.Flags;
-    return Object.entries(PermissionsBitField.Flags).find(
-      ([, v]) => v == value,
+    return Object.values(PermissionsBitField.Flags).find(
+      (v) => v == value,
     )![0] as keyof typeof PermissionsBitField.Flags;
   }
 

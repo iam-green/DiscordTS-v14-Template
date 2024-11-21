@@ -4,7 +4,6 @@ import {
   AudioResource,
   createAudioPlayer,
   createAudioResource,
-  DiscordGatewayAdapterCreator,
   joinVoiceChannel,
   NoSubscriberBehavior,
   VoiceConnection,
