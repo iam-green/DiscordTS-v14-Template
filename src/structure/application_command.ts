@@ -99,12 +99,6 @@ export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
     Object.assign(this, commandOptions);
   }
 
-  // private static allCommands: CommandInfo<ApplicationCommandType>[] = [];
-  // private static commands: CommandInfo<ApplicationCommandType>[] = [];
-  // private static guildCommands: CommandInfo<ApplicationCommandType>[] = [];
-  // private static guildCommandsSorted: {
-  //   [x: string]: CommandInfo<ApplicationCommandType>[];
-  // } = {};
   public static allCommands: CommandInfoMap = new Map();
   public static commands: CommandInfoMap = new Map();
   public static guildCommands: CommandInfoMap = new Map();
