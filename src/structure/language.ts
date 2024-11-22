@@ -3,6 +3,7 @@ import {
   Locale,
   LocaleString,
   SharedNameAndDescription,
+  SlashCommandStringOption,
 } from 'discord.js';
 import { glob } from 'glob';
 import { BotConfig } from '../config';
@@ -123,5 +124,30 @@ export class Language {
           }))
           .reduce((a, b) => ({ ...a, ...b })),
       );
+  }
+
+  static commandOptionChoice(
+    command_name: string,
+    command_option: string,
+    command_choice: string[],
+    option: SlashCommandStringOption,
+  ) {
+    return this.commandOption(command_name, command_option, option).addChoices(
+      command_choice.map((v) => ({
+        name: Language.get(
+          BotConfig.DEFAULT_LANGUAGE,
+          `Command_${command_name}_Option_${command_option}_Choice_${v}` as keyof LanguageData,
+        ),
+        value: v,
+        name_localizations: Language.locales()
+          .map((w) => ({
+            [w]: Language.get(
+              w,
+              `Command_${command_name}_Option_${command_option}_Choice_${v}` as keyof LanguageData,
+            ),
+          }))
+          .reduce((a, b) => ({ ...a, ...b })),
+      })),
+    );
   }
 }
