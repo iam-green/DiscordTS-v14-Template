@@ -84,4 +84,44 @@ export class Language {
       },
     };
   }
+
+  static commandOption<T extends SharedNameAndDescription>(
+    command_name: string,
+    command_option: string,
+    option: T,
+  ): T {
+    return option
+      .setName(
+        Language.get(
+          BotConfig.DEFAULT_LANGUAGE,
+          `Command_${command_name}_Option_${command_option}_Name` as keyof LanguageData,
+        ),
+      )
+      .setDescription(
+        Language.get(
+          BotConfig.DEFAULT_LANGUAGE,
+          `Command_${command_name}_Option_${command_option}_Description` as keyof LanguageData,
+        ),
+      )
+      .setNameLocalizations(
+        Language.locales()
+          .map((v) => ({
+            [v]: Language.get(
+              v,
+              `Command_${command_name}_Option_${command_option}_Name` as keyof LanguageData,
+            ),
+          }))
+          .reduce((a, b) => ({ ...a, ...b })),
+      )
+      .setDescriptionLocalizations(
+        Language.locales()
+          .map((v) => ({
+            [v]: Language.get(
+              v,
+              `Command_${command_name}_Option_${command_option}_Description` as keyof LanguageData,
+            ),
+          }))
+          .reduce((a, b) => ({ ...a, ...b })),
+      );
+  }
 }
