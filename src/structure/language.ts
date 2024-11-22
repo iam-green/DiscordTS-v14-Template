@@ -1,6 +1,12 @@
-import { Locale, LocaleString } from 'discord.js';
+import {
+  ApplicationCommandType,
+  Locale,
+  LocaleString,
+  SharedNameAndDescription,
+} from 'discord.js';
 import { glob } from 'glob';
 import { BotConfig } from '../config';
+import { CommandType } from './application_command';
 
 export type LanguageData = typeof import('../language/en-US.json');
 
@@ -44,5 +50,38 @@ export class Language {
     return result.replace(/{(\d+)}/g, (match, number) => {
       return typeof formats[number] != 'undefined' ? formats[number] : match;
     });
+  }
+
+  static command(
+    name: string,
+  ): Pick<
+    CommandType<ApplicationCommandType.ChatInput>,
+    'name' | 'description' | 'localization'
+  > {
+    return {
+      name: Language.get(
+        BotConfig.DEFAULT_LANGUAGE,
+        `Command_${name}_Name` as keyof LanguageData,
+      ),
+      description: Language.get(
+        BotConfig.DEFAULT_LANGUAGE,
+        `Command_${name}_Description` as keyof LanguageData,
+      ),
+      localization: {
+        name: Language.locales()
+          .map((v) => ({
+            [v]: Language.get(v, `Command_${name}_Name` as keyof LanguageData),
+          }))
+          .reduce((a, b) => ({ ...a, ...b })),
+        description: Language.locales()
+          .map((v) => ({
+            [v]: Language.get(
+              v,
+              `Command_${name}_Description` as keyof LanguageData,
+            ),
+          }))
+          .reduce((a, b) => ({ ...a, ...b })),
+      },
+    };
   }
 }
