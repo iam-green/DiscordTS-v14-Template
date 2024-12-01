@@ -43,23 +43,23 @@ export class Discord {
     this.expire = Date.now() + 1000 * 60 * 60 * 4;
   }
 
-  static async clientId() {
-    if (this.expire < Date.now()) await this.getValues();
+  static async clientId(refresh: boolean = false) {
+    if (this.expire < Date.now() || refresh) await this.getValues();
     return this.client_id;
   }
 
-  static async otherClientId() {
-    if (this.expire < Date.now()) await this.getValues();
+  static async otherClientId(refresh: boolean = false) {
+    if (this.expire < Date.now() || refresh) await this.getValues();
     return this.other_client_id;
   }
 
-  static async adminId() {
-    if (this.expire < Date.now()) await this.getValues();
+  static async adminId(refresh: boolean = false) {
+    if (this.expire < Date.now() || refresh) await this.getValues();
     return this.admin_id;
   }
 
-  static async developerId() {
-    if (this.expire < Date.now()) await this.getValues();
+  static async developerId(refresh: boolean = false) {
+    if (this.expire < Date.now() || refresh) await this.getValues();
     return this.developer_id;
   }
 
