@@ -2,8 +2,8 @@
 <p align="center">
   DiscordJS template for easy use of many commands, events, components and more<br>
   <a href="/README.md">English</a>
-  <!-- &nbsp;|&nbsp;
-  <a href="/docs/ko/README.md">Korean</a> -->
+  &nbsp;|&nbsp;
+  <a href="/docs/ko/README.md">한국어</a>
 </p>
 
 ## Table of Contents
@@ -19,8 +19,8 @@
 
 ## Installation
 
-1. [Download](https://github.com/iam-green/DiscordJS-v14-Template/archive/refs/heads/v3.zip) and decompress or clone this project
-2. Rename your project in the `package.json` file
+1. [Download](https://github.com/iam-green/DiscordJS-v14-Template/archive/refs/heads/v3.zip) and decompress or clone this project.
+2. Rename your project in the `package.json` file.
 3. Rename the following files:
    - `.env.example` → `.env`: Used for secrets, like the Discord Bot Token.
 4. Fill all the required values in `.env`.
@@ -36,9 +36,9 @@
   - Message Commands
   - Application Commands
     - Chat Input
+      - Support Autocomplete
     - User Context
     - Message Context
-      - Support Autocomplete
 - Handles Components
   - Buttons
   - Select Menus
@@ -80,8 +80,8 @@ The bot will automatically call you when you write it from the <u>**/src/textCom
 ```ts
 new ExtendedApplicationCommand({
   type: ApplicationCommandType; // ChatInput, User, Message
-  name: string | string[]; // Available when type is ChatInput, name of the command
-  description?: string | string[]; // Available when type is ChatInput, description of the command
+  name: string | string[]; // Command name
+  description?: string | string[]; // Available when type is ChatInput, Command description
   localization?: Partial<{
     name: LocalizationMap | LocalizationMap[]; // Translated command name by language
     description: LocalizationMap | LocalizationMap[]; // Available when type is ChatInput, Translated command description by language
@@ -118,12 +118,12 @@ The bot will automatically call you when you write it from the <u>**/src/command
 ```ts
 ExtendedComponent({
   type: ComponentType; // Button, StringSelect, TextInput, UserSelect, RoleSelect, MentionableSelect, ChannelSelect
-  id: string; // The desired component ID
+  id: string; // Component ID
   component: APIComponent | // Component JSON
     (option: Builder) => Builder; // Componenet Builder
   once?: boolean; // Whether to run only once
   options?: Partial<{
-    expire: number; // Component expiration time (ms)
+    expire: number; // Component expiration time
     guildId?: string[]; // Use when you want to use it in a specific guild
     permission: Partial<{
       user: PermissionResolvable[]; // Permissions required by the user to use the command
@@ -144,14 +144,14 @@ ExtendedComponent({
 
 <a style="color: gray;" href="/src/structure/component.ts">/src/structure/component.ts</a>
 
-It is recommended that the component code be written and import from <u>**/src/component/\*\*/\***</u>.
+We recommend writing your component code in <u>**/src/component/\*\*/\***</u>.
 
 ### Event
 
 ```ts
 new ExtendedEvent({
   event: keyof ClientEvents; // Event key
-  once?: boolean; // The desired component ID
+  once?: boolean; // Whether to run only once
   run: (
     client: ExtendedClient,
     ...args: ClientEvents[keyof ClientEvents],
