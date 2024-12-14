@@ -237,6 +237,13 @@ export class ExtendedClient extends Client {
           }
       if (!command) return;
 
+      // Check Guild
+      if (
+        command.options?.guildId &&
+        !command.options.guildId.includes(message.guild?.id ?? '')
+      )
+        return;
+
       // Check Send Message Permission
       if (
         message.guild?.members?.me &&

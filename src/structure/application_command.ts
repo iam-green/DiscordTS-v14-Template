@@ -70,12 +70,12 @@ export type CommandType<Type extends ApplicationCommandType> = {
           ) => SlashCommandSubcommandBuilder)
     : undefined;
   options?: Partial<{
-    guildId: string[];
     permission: Partial<{
       user: PermissionResolvable[];
       bot: PermissionResolvable[];
     }>;
     cooldown: number;
+    guildId: string[];
     onlyGuild: boolean;
     botAdmin: boolean;
     botDeveloper: boolean;

@@ -100,12 +100,12 @@ export type ComponentType<Type extends SupportComponentType> = {
     : never;
   once?: boolean;
   options?: Partial<{
-    expire: number;
-    guildId: string[];
     permission: Partial<{
       user: PermissionResolvable[];
       bot: PermissionResolvable[];
     }>;
+    expire: number;
+    guildId: string[];
     cooldown: number;
     onlyGuild: boolean;
     botAdmin: boolean;

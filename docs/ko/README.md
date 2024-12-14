@@ -51,13 +51,13 @@
 ```ts
 new ExtendedTextCommand({
   name: string | string[]; // 명령어 이름
-  guildId?: string[]; // 특정 길드에서 사용하려는 경우 사용
   options?: Partial<{
     permission: Partial<{
       user: PermissionResolvable[]; // 유저가 사용할 때 필요한 권한
       bot: PermissionResolvable[]; // 봇이 실행할 때 필요한 권한
     }>;
     cooldown: number; // 명령어 쿨다운
+    guildId?: string[]; // 특정 길드에서 사용하려는 경우 사용
     onlyGuild: boolean; // 길드에서만 실행할지 여부
     botAdmin: boolean; // 봇에 팀이 있는 경우, 팀의 관리자만 사용 가능 여부
     botDeveloper: boolean; // 봇에 팀이 있는 경우, 팀의 개발자만 사용 가능 여부
@@ -95,6 +95,7 @@ new ExtendedApplicationCommand({
       bot: PermissionResolvable[]; // 봇이 실행할 때 필요한 권한
     }>;
     cooldown: number; // 명령어 쿨다운
+    guildId?: string[]; // 특정 길드에서 사용하려는 경우 사용
     onlyGuild: boolean; // 길드에서만 실행할지 여부
     botAdmin: boolean; // 봇에 팀이 있는 경우, 팀의 관리자만 사용 가능 여부
     botDeveloper: boolean; // 봇에 팀이 있는 경우, 팀의 개발자만 사용 가능 여부
@@ -123,12 +124,12 @@ ExtendedComponent({
     (option: Builder) => Builder; // 컴포넌트 Builder
   once?: boolean; // 한번만 실행 여부
   options?: Partial<{
-    expire: number; // 컴포넌트 만료 시간
-    guildId?: string[]; // 특정 길드에서 사용하려는 경우 사용
     permission: Partial<{
       user: PermissionResolvable[]; // 유저가 사용할 때 필요한 권한
       bot: PermissionResolvable[]; // 봇이 실행할 때 필요한 권한
     }>;
+    expire: number; // 컴포넌트 만료 시간
+    guildId?: string[]; // 특정 길드에서 사용하려는 경우 사용
     cooldown: number; // 명령어 쿨다운
     onlyGuild: boolean; // 길드에서만 실행할지 여부
     botAdmin: boolean; // 봇에 팀이 있는 경우, 팀의 관리자만 사용 가능 여부

@@ -51,13 +51,13 @@
 ```ts
 new ExtendedTextCommand({
   name: string | string[]; // Command name
-  guildId?: string[]; // Use when you want to use it in a specific guild
   options?: Partial<{
     permission: Partial<{
       user: PermissionResolvable[]; // Permissions required by the user to use the command
       bot: PermissionResolvable[]; // Permissions required by bots to execute commands
     }>;
     cooldown: number; // Command cooldown
+    guildId?: string[]; // Use when you want to use it in a specific guild
     onlyGuild: boolean; // Whether to run on Guild only
     botAdmin: boolean; // Available if the bot has a team, only team's Admin enabled
     botDeveloper: boolean; // Available if the bot has a team, only the team's developers set it up
@@ -95,6 +95,7 @@ new ExtendedApplicationCommand({
       bot: PermissionResolvable[]; // Permissions required by bots to execute commands
     }>;
     cooldown: number; // Command cooldown
+    guildId?: string[]; // Use when you want to use it in a specific guild
     onlyGuild: boolean; // Whether to run on Guild only
     botAdmin: boolean; // Available if the bot has a team, only team's Admin enabled
     botDeveloper: boolean; // Available if the bot has a team, only the team's developers set it up
@@ -123,12 +124,12 @@ ExtendedComponent({
     (option: Builder) => Builder; // Componenet Builder
   once?: boolean; // Whether to run only once
   options?: Partial<{
-    expire: number; // Component expiration time
-    guildId?: string[]; // Use when you want to use it in a specific guild
     permission: Partial<{
       user: PermissionResolvable[]; // Permissions required by the user to use the command
       bot: PermissionResolvable[]; // Permissions required by bots to execute commands
     }>;
+    expire: number; // Component expiration time
+    guildId?: string[]; // Use when you want to use it in a specific guild
     cooldown: number; // Command cooldown
     onlyGuild: boolean; // Whether to run on Guild only
     botAdmin: boolean; // Available if the bot has a team, only team's Admin enabled
