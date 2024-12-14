@@ -293,7 +293,7 @@ export class ExtendedClient extends Client {
     const locale =
       'locale' in message
         ? message.locale
-        : (this.locale.get(message.author.id) ?? BotConfig.DEFAULT_LANGUAGE);
+        : this.locale.get(message.author.id) ?? BotConfig.DEFAULT_LANGUAGE;
     const user = 'user' in message ? message.user : message.author;
     const cooldownId =
       'commandId' in message ? message.commandId : commandName || '';
