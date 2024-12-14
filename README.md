@@ -1,0 +1,168 @@
+<h1 align="center">DiscordJS v14 Template</h1>
+<p align="center">
+  DiscordJS template for easy use of many commands, events, components and more<br>
+  <a href="/README.md">English</a>
+  <!-- &nbsp;|&nbsp;
+  <a href="/docs/ko/README.md">Korean</a> -->
+</p>
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Features](#features)
+- [Command, Component, Event Structure](#command-component-event-structure)
+  - [Text Command](#text-command)
+  - [Application Commnad](#application-commnad)
+  - [Component](#component)
+  - [Event](#event)
+- [License](#license)
+
+## Installation
+
+1. [Download](https://github.com/iam-green/DiscordJS-v14-Template/archive/refs/heads/v3.zip) and decompress or clone this project
+2. Rename your project in the `package.json` file
+3. Rename the following files:
+   - `.env.example` → `.env`: Used for secrets, like the Discord Bot Token.
+4. Fill all the required values in `.env`.
+5. Install all required dependencies: `npm install`
+6. Build a TypeScript project: `npm build`
+7. Run the command `npm run start` to start the bot.
+
+## Features
+
+- Support latest version of [discord.js](https://discord.js.org/)
+- Support [drizzle orm](/docs/en-US/database.md) for using Database
+- Supports all possible type of commands
+  - Message Commands
+  - Application Commands
+    - Chat Input
+    - User Context
+    - Message Context
+      - Support Autocomplete
+- Handles Components
+  - Buttons
+  - Select Menus
+- Easy-to-use [modules](/docs/en-US/module.md)
+
+## Command, Component, Event Structure
+
+### Text Command
+
+```ts
+new ExtendedTextCommand({
+  name: string | string[]; // Command name
+  guildId?: string[]; // Use when you want to use it in a specific guild
+  options?: Partial<{
+    permission: Partial<{
+      user: PermissionResolvable[]; // Permissions required by the user to use the command
+      bot: PermissionResolvable[]; // Permissions required by bots to execute commands
+    }>;
+    cooldown: number; // Command cooldown
+    onlyGuild: boolean; // Whether to run on Guild only
+    botAdmin: boolean; // Available if the bot has a team, only team's Admin enabled
+    botDeveloper: boolean; // Available if the bot has a team, only the team's developers set it up
+    guildOwner: boolean; // Enable only owners of Guild
+  }>;
+  run: (options: {
+    client: ExtendedClient;
+    message: Message;
+    locale: LocaleString;
+  }) => void;
+})
+```
+
+<a style="color: gray;" href="/src/structure/text_command.ts">/src/structure/text_command.ts</a>
+
+The bot will automatically call you when you write it from the <u>**/src/textCommand/\*\*/\***</u> location.
+
+### Application Commnad
+
+```ts
+new ExtendedApplicationCommand({
+  type: ApplicationCommandType; // ChatInput, User, Message
+  name: string | string[]; // Available when type is ChatInput, name of the command
+  description?: string | string[]; // Available when type is ChatInput, description of the command
+  localization?: Partial<{
+    name: LocalizationMap | LocalizationMap[]; // Translated command name by language
+    description: LocalizationMap | LocalizationMap[]; // Available when type is ChatInput, Translated command description by language
+  }>;
+  command?: // Available when type is ChatInput
+    APIApplicationCommand | // Command JSON
+    (builder: SlashCommandBuilder) => SlashCommandBuilder, // Command Builder
+  options?: Partial<{
+    permission: Partial<{
+      user: PermissionResolvable[]; // Permissions required by the user to use the command
+      bot: PermissionResolvable[]; // Permissions required by bots to execute commands
+    }>;
+    cooldown: number; // Command cooldown
+    onlyGuild: boolean; // Whether to run on Guild only
+    botAdmin: boolean; // Available if the bot has a team, only team's Admin enabled
+    botDeveloper: boolean; // Available if the bot has a team, only the team's developers set it up
+    guildOwner: boolean; // Enable only owners of Guild
+  }>;
+  run: (options: {
+    client: ExtendedClient;
+    interaction: Interaction;
+    args?: CommandInteractionOptionResolver;
+  }) => void;
+  autoComplete?: (options: AutoCompleteOptions) => void; // Available when type is ChatInput
+})
+```
+
+<a style="color: gray;" href="/src/structure/application_command.ts">/src/structure/application_command.ts</a>
+
+The bot will automatically call you when you write it from the <u>**/src/command/\*\*/\***</u> location.
+
+### Component
+
+```ts
+ExtendedComponent({
+  type: ComponentType; // Button, StringSelect, TextInput, UserSelect, RoleSelect, MentionableSelect, ChannelSelect
+  id: string; // The desired component ID
+  component: APIComponent | // Component JSON
+    (option: Builder) => Builder; // Componenet Builder
+  once?: boolean; // Whether to run only once
+  options?: Partial<{
+    expire: number; // Component expiration time (ms)
+    guildId?: string[]; // Use when you want to use it in a specific guild
+    permission: Partial<{
+      user: PermissionResolvable[]; // Permissions required by the user to use the command
+      bot: PermissionResolvable[]; // Permissions required by bots to execute commands
+    }>;
+    cooldown: number; // Command cooldown
+    onlyGuild: boolean; // Whether to run on Guild only
+    botAdmin: boolean; // Available if the bot has a team, only team's Admin enabled
+    botDeveloper: boolean; // Available if the bot has a team, only the team's developers set it up
+    guildOwner: boolean; // Enable only owners of Guild
+  }>;
+  run: (options: {
+    client: ExtendedClient;
+    interaction: Interaction;
+  }) => void;
+})
+```
+
+<a style="color: gray;" href="/src/structure/component.ts">/src/structure/component.ts</a>
+
+It is recommended that the component code be written and import from <u>**/src/component/\*\*/\***</u>.
+
+### Event
+
+```ts
+new ExtendedEvent({
+  event: keyof ClientEvents; // Event key
+  once?: boolean; // The desired component ID
+  run: (
+    client: ExtendedClient,
+    ...args: ClientEvents[keyof ClientEvents],
+  ) => void;
+})
+```
+
+<a style="color: gray;" href="/src/structure/event.ts">/src/structure/event.ts</a>
+
+The bot will automatically call you when you write it from the <u>**/src/event/\*\*/\***</u> location.
+
+## License
+
+[**GPL-3.0**](/LICENSE), General Public License v3
