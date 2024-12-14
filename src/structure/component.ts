@@ -9,6 +9,8 @@ import {
   ButtonInteraction,
   ChannelSelectMenuBuilder,
   ChannelSelectMenuInteraction,
+  ButtonBuilder,
+  ComponentType as DiscordComponentType,
   MentionableSelectMenuBuilder,
   MentionableSelectMenuInteraction,
   ModalSubmitInteraction,
@@ -20,10 +22,6 @@ import {
   TextInputBuilder,
   UserSelectMenuBuilder,
   UserSelectMenuInteraction,
-} from 'discord.js';
-import {
-  ButtonBuilder,
-  ComponentType as DiscordComponentType,
 } from 'discord.js';
 import { randomUUID } from 'crypto';
 import { ExtendedClient } from './client';
@@ -122,55 +120,36 @@ export type ComponentType<Type extends SupportComponentType> = {
   }) => void;
 };
 
-export class ExtendedComponent<Type extends SupportComponentType> {
-  type: ComponentType<Type>['type'];
-  id: ComponentType<Type>['id'];
-  component: ComponentType<Type>['component'];
-  options: ComponentType<Type>['options'];
-  run: ComponentType<Type>['run'];
+export const ExtendedComponent = <Type extends SupportComponentType>(
+  data: ComponentType<Type>,
+) => {
+  let uuid = randomUUID();
+  while (ExtendedComponent.list.has(`${data.id}_${uuid}`)) uuid = randomUUID();
+  const id = `${data.id}_${uuid}`;
+  const component = (
+    typeof data.component == 'function'
+      ? data.component(new ComponentBuilderMap[data.type]({ custom_id: id }))
+      : data.component
+  ) as ComponentGenerateTypeMap[Type];
+  if (component)
+    ExtendedComponent.list.set(id, {
+      component: data,
+      expire: data.options?.expire
+        ? Date.now() + data.options.expire
+        : undefined,
+    });
+  return Object.assign(component, data);
+};
 
-  static list = new Map<
-    string,
-    {
-      component: ComponentType<SupportComponentType>;
-      expire?: number;
-    }
-  >();
-
-  constructor(componentOptions: ComponentType<Type>) {
-    Object.assign(this, componentOptions);
+ExtendedComponent.list = new Map<
+  string,
+  {
+    component: ComponentType<SupportComponentType>;
+    expire?: number;
   }
+>();
 
-  generate() {
-    let uuid = randomUUID();
-    while (
-      Array.from(ExtendedComponent.list.keys()).some((v) => v.endsWith(uuid))
-    )
-      uuid = randomUUID();
-    const id = `${this.id}_${uuid}`;
-    const component = (
-      this.type in ComponentBuilderMap
-        ? typeof this.component == 'function'
-          ? this.component(
-              new ComponentBuilderMap[this.type]({ custom_id: id }),
-            )
-          : this.component
-        : undefined
-    ) as Type extends keyof ComponentGenerateTypeMap
-      ? ComponentGenerateTypeMap[Type]
-      : undefined;
-    if (component)
-      ExtendedComponent.list.set(id, {
-        component: this,
-        expire: this.options?.expire
-          ? Date.now() + this.options.expire
-          : undefined,
-      });
-    return component;
-  }
-
-  static removeExpired() {
-    for (const [id, { expire }] of this.list)
-      if (expire && expire < Date.now()) this.list.delete(id);
-  }
-}
+ExtendedComponent.removeExpired = () => {
+  for (const [id, { expire }] of ExtendedComponent.list)
+    if (expire && expire < Date.now()) ExtendedComponent.list.delete(id);
+};
