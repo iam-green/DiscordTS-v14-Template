@@ -12,7 +12,7 @@
 - [Features](#features)
 - [Command, Component, Event Structure](#command-component-event-structure)
   - [Text Command](#text-command)
-  - [Application Commnad](#application-commnad)
+  - [Application Command](#application-command)
   - [Component](#component)
   - [Event](#event)
 - [License](#license)
@@ -33,7 +33,7 @@
 - Support latest version of [discord.js](https://discord.js.org/)
 - Support [drizzle orm](/docs/en-US/database.md) for using Database
 - Supports all possible type of commands
-  - Message Commands
+  - Text Commands
   - Application Commands
     - Chat Input
       - Support Autocomplete
@@ -50,32 +50,32 @@
 
 ```ts
 new ExtendedTextCommand({
-  name: string | string[]; // Command name
+  name: string | string[], // Command name
   options?: Partial<{
     permission: Partial<{
-      user: PermissionResolvable[]; // Permissions required by the user to use the command
-      bot: PermissionResolvable[]; // Permissions required by bots to execute commands
-    }>;
-    cooldown: number; // Command cooldown
-    guildId?: string[]; // Use when you want to use it in a specific guild
-    onlyGuild: boolean; // Whether to run on Guild only
-    botAdmin: boolean; // Available if the bot has a team, only team's Admin enabled
-    botDeveloper: boolean; // Available if the bot has a team, only the team's developers set it up
-    guildOwner: boolean; // Enable only owners of Guild
-  }>;
+      user: PermissionResolvable[], // Permissions required by the user to use the command
+      bot: PermissionResolvable[], // Permissions required by bots to execute commands
+    }>,
+    cooldown: number, // Command cooldown
+    guildId: string[], // Use when you want to use it in a specific guild
+    onlyGuild: boolean, // Whether to run on Guild only
+    botAdmin: boolean, // Available if the bot has a team, only team's Admin enabled
+    botDeveloper: boolean, // Available if the bot has a team, only the team's developers set it up
+    guildOwner: boolean, // Enable only owners of Guild
+  }>,
   run: (options: {
-    client: ExtendedClient;
-    message: Message;
-    locale: LocaleString;
-  }) => void;
-})
+    client: ExtendedClient,
+    message: Message,
+    locale: LocaleString,
+  }) => void
+});
 ```
 
 <a style="color: gray;" href="/src/structure/text_command.ts">/src/structure/text_command.ts</a>
 
 The bot will automatically call you when you write it from the <u>**/src/textCommand/\*\*/\***</u> location.
 
-### Application Commnad
+### Application Command
 
 ```ts
 new ExtendedApplicationCommand({
@@ -91,23 +91,23 @@ new ExtendedApplicationCommand({
     (builder: SlashCommandBuilder) => SlashCommandBuilder, // Command Builder
   options?: Partial<{
     permission: Partial<{
-      user: PermissionResolvable[]; // Permissions required by the user to use the command
-      bot: PermissionResolvable[]; // Permissions required by bots to execute commands
-    }>;
-    cooldown: number; // Command cooldown
-    guildId?: string[]; // Use when you want to use it in a specific guild
-    onlyGuild: boolean; // Whether to run on Guild only
-    botAdmin: boolean; // Available if the bot has a team, only team's Admin enabled
-    botDeveloper: boolean; // Available if the bot has a team, only the team's developers set it up
-    guildOwner: boolean; // Enable only owners of Guild
+      user: PermissionResolvable[], // Permissions required by the user to use the command
+      bot: PermissionResolvable[], // Permissions required by bots to execute commands
+    }>,
+    cooldown: number, // Command cooldown
+    guildId: string[], // Use when you want to use it in a specific guild
+    onlyGuild: boolean, // Whether to run on Guild only
+    botAdmin: boolean, // Available if the bot has a team, only team's Admin enabled
+    botDeveloper: boolean, // Available if the bot has a team, only the team's developers set it up
+    guildOwner: boolean, // Enable only owners of Guild
   }>;
   run: (options: {
-    client: ExtendedClient;
-    interaction: Interaction;
-    args?: CommandInteractionOptionResolver;
-  }) => void;
-  autoComplete?: (options: AutoCompleteOptions) => void; // Available when type is ChatInput
-})
+    client: ExtendedClient,
+    interaction: Interaction,
+    args?: CommandInteractionOptionResolver,
+  }) => void,
+  autoComplete?: (options: AutoCompleteOptions) => void // Available when type is ChatInput
+});
 ```
 
 <a style="color: gray;" href="/src/structure/application_command.ts">/src/structure/application_command.ts</a>
@@ -118,29 +118,29 @@ The bot will automatically call you when you write it from the <u>**/src/command
 
 ```ts
 ExtendedComponent({
-  type: ComponentType; // Button, StringSelect, TextInput, UserSelect, RoleSelect, MentionableSelect, ChannelSelect
-  id: string; // Component ID
+  type: ComponentType, // Button, StringSelect, TextInput, UserSelect, RoleSelect, MentionableSelect, ChannelSelect
+  id: string, // Component ID
   component: APIComponent | // Component JSON
-    (option: Builder) => Builder; // Componenet Builder
-  once?: boolean; // Whether to run only once
+    (option: Builder) => Builder, // Componenet Builder
+  once?: boolean, // Whether to run only once
   options?: Partial<{
     permission: Partial<{
-      user: PermissionResolvable[]; // Permissions required by the user to use the command
-      bot: PermissionResolvable[]; // Permissions required by bots to execute commands
-    }>;
-    expire: number; // Component expiration time
-    guildId?: string[]; // Use when you want to use it in a specific guild
-    cooldown: number; // Command cooldown
-    onlyGuild: boolean; // Whether to run on Guild only
-    botAdmin: boolean; // Available if the bot has a team, only team's Admin enabled
-    botDeveloper: boolean; // Available if the bot has a team, only the team's developers set it up
-    guildOwner: boolean; // Enable only owners of Guild
-  }>;
+      user: PermissionResolvable[], // Permissions required by the user to use the command
+      bot: PermissionResolvable[], // Permissions required by bots to execute commands
+    }>,
+    expire: number, // Component expiration time
+    cooldown: number, // Command cooldown
+    guildId: string[], // Use when you want to use it in a specific guild
+    onlyGuild: boolean, // Whether to run on Guild only
+    botAdmin: boolean, // Available if the bot has a team, only team's Admin enabled
+    botDeveloper: boolean, // Available if the bot has a team, only the team's developers set it up
+    guildOwner: boolean, // Enable only owners of Guild
+  }>,
   run: (options: {
-    client: ExtendedClient;
-    interaction: Interaction;
-  }) => void;
-})
+    client: ExtendedClient,
+    interaction: Interaction,
+  }) => void
+});
 ```
 
 <a style="color: gray;" href="/src/structure/component.ts">/src/structure/component.ts</a>
@@ -151,13 +151,13 @@ We recommend writing your component code in <u>**/src/component/\*\*/\***</u>.
 
 ```ts
 new ExtendedEvent({
-  event: keyof ClientEvents; // Event key
-  once?: boolean; // Whether to run only once
+  event: keyof ClientEvents, // Event key
+  once?: boolean, // Whether to run only once
   run: (
     client: ExtendedClient,
     ...args: ClientEvents[keyof ClientEvents],
-  ) => void;
-})
+  ) => void
+});
 ```
 
 <a style="color: gray;" href="/src/structure/event.ts">/src/structure/event.ts</a>
