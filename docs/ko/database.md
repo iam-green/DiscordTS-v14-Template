@@ -1,4 +1,9 @@
-# DiscordJS v14 Template 데이터베이스
+<h1 align="center">DiscordJS v14 Template 데이터베이스</h1>
+<p align="center">
+  <a href="/docs/en-US/database.md">English</a>
+  &nbsp;|&nbsp;
+  <a href="/docs/ko/database.md">한국어</a>
+</p>
 
 이 템플릿은 쉬운 데이터베이스 사용을 위하여 [Drizzle ORM](https://orm.drizzle.team/)을 사용중입니다.<br>
 이 템플릿은 [PostgreSQL](https://orm.drizzle.team/docs/get-started-postgresql) 데이터베이스를 기본으로 사용합니다.

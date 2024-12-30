@@ -1,4 +1,9 @@
-# DiscordJS v14 Template Database
+<h1 align="center">DiscordJS v14 Template Database</h1>
+<p align="center">
+  <a href="/docs/en-US/database.md">English</a>
+  &nbsp;|&nbsp;
+  <a href="/docs/ko/database.md">한국어</a>
+</p>
 
 This template is using [Drizzle ORM](https://orm.drizzle.team/) for easy database use.<br>
 This template uses the [PostgreSQL](https://orm.drizzle.team/docs/get-started-postgresql) database by default.
