@@ -12,7 +12,6 @@ import {
   MessageContextMenuCommandInteraction,
   PermissionResolvable,
   REST,
-  RESTPostAPIChatInputApplicationCommandsJSONBody,
   RESTPostAPIContextMenuApplicationCommandsJSONBody,
   Routes,
   SlashCommandSubcommandBuilder,
@@ -24,6 +23,23 @@ import chalk from 'chalk';
 import { Log, Discord } from '../module';
 import { Language } from './language';
 import { BotConfig } from '../config';
+
+export type ApplicationCommandPayload = Omit<
+  APIApplicationCommand,
+  | 'id'
+  | 'type'
+  | 'description'
+  | 'application_id'
+  | 'version'
+  | 'default_member_permissions'
+  | 'default_permission'
+> &
+  Partial<
+    Pick<
+      APIApplicationCommand,
+      'description' | 'default_member_permissions' | 'default_permission'
+    >
+  >;
 
 export type AutoCompleteOptions = {
   client: ExtendedClient;
@@ -58,8 +74,7 @@ export type CommandType<Type extends ApplicationCommandType> = {
   command?: Type extends ApplicationCommandType.ChatInput
     ?
         | Omit<
-            APIApplicationCommandSubcommandOption,
-            | 'type'
+            ApplicationCommandPayload,
             | 'name'
             | 'name_localizations'
             | 'description'
@@ -134,7 +149,7 @@ export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
     commandName: string,
     nameArg: Type extends ApplicationCommandType.ChatInput ? number : undefined,
   ): Pick<
-    APIApplicationCommand,
+    ApplicationCommandPayload,
     'name_localizations' | 'description_localizations'
   > | null {
     const isChatInput = type == ApplicationCommandType.ChatInput;
@@ -171,7 +186,7 @@ export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
         `The number of localization names and localization descriptions is different.\nCommand Name : '${name[0]}'`,
       );
     const result: Pick<
-      APIApplicationCommand,
+      ApplicationCommandPayload,
       'name_localizations' | 'description_localizations'
     > = {};
     const nameIdx = name.findIndex((v) =>
@@ -204,7 +219,7 @@ export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
     commandName: string,
     nameArg: Type extends ApplicationCommandType.ChatInput ? number : undefined,
   ): Type extends ApplicationCommandType.ChatInput
-    ? Omit<APIApplicationCommandSubcommandOption, 'type'>
+    ? ApplicationCommandPayload
     : RESTPostAPIContextMenuApplicationCommandsJSONBody {
     const isChatInput = type == ApplicationCommandType.ChatInput;
     const name = Array.isArray(command.command.name)
@@ -260,14 +275,8 @@ export class ExtendedApplicationCommand<Type extends ApplicationCommandType> {
 
   private static convertAllCommands(
     commands: CommandInfoMap,
-  ): Array<
-    | RESTPostAPIChatInputApplicationCommandsJSONBody
-    | RESTPostAPIContextMenuApplicationCommandsJSONBody
-  > {
-    const result: Array<
-      | RESTPostAPIChatInputApplicationCommandsJSONBody
-      | RESTPostAPIContextMenuApplicationCommandsJSONBody
-    > = [];
+  ): Array<ApplicationCommandPayload> {
+    const result: Array<ApplicationCommandPayload> = [];
 
     for (const command of commands.values())
       for (const name of (Array.isArray(command.command.name)
