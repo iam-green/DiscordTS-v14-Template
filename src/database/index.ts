@@ -4,14 +4,16 @@ import { Log } from '../module';
 import { Client } from 'pg';
 import * as schema from './schema';
 
-const queryClient = new Client(process.env.DATABASE_URL || '');
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is missing');
+
+const client = new Client(process.env.DATABASE_URL);
+export const db = drizzle(client, { schema });
 
 export const databaseInit = async () => {
   if (process.env.DATABASE_URL) {
-    await queryClient.connect();
+    await client.connect();
     await migrate(db, { migrationsFolder: `./src/database/migration` });
     Log.info('Database Connected');
   }
 };
 
-export const db = drizzle(queryClient, { schema });

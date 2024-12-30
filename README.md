@@ -31,7 +31,7 @@
 ## Features
 
 - Support latest version of [discord.js](https://discord.js.org/)
-- Support [drizzle orm](/docs/en-US/database.md) for using Database
+- Support [Drizzle ORM](/docs/en-US/database.md) for using Database
 - Supports all possible type of commands
   - Text Commands
   - Application Commands

@@ -31,7 +31,7 @@
 ## 기능
 
 - [discord.js](https://discord.js.org/) 최신 버전 지원
-- 데이터베이스 사용을 위한 [drizzle orm](/docs/ko/database.md) 지원
+- 데이터베이스 사용을 위한 [Drizzle ORM](/docs/ko/database.md) 지원
 - 모든 종류의 명령어 지원
   - 텍스트 명령어
   - 어플리케이션 명령어
