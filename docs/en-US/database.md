@@ -53,8 +53,8 @@ export const example = pgTable('example', {
 
 |  Field  |   Type   |  Null   |   Key   |        Default         |
 | :-----: | :------: | :-----: | :-----: | :--------------------: |
-|   id    | `string` | `false` | Primary |       랜덤 UUID        |
-| created |  `Date`  | `false` |         | 데이터베이스 생성 시간 |
+|   id    | `string` | `false` | Primary |      Random UUID       |
+| created |  `Date`  | `false` |         | Database Creation Time |
 
 > [!NOTE]
 > The code above is an example of schema code, and the table above is the structure of the example schema.<br>
@@ -151,12 +151,14 @@ You should use the [SQLite](https://orm.drizzle.team/docs/get-started-sqlite) pa
 ```bash
 npm remove pg @types/pg
 ```
+
 After using this command to remove the [PostgreSQL](https://orm.drizzle.team/docs/get-started-postgresql) package,
 
 ```bash
 npm install better-sqlite3
 npm install -D @types/better-sqlite3
 ```
+
 You can use this command to install the [SQLite](https://orm.drizzle.team/docs/get-started-sqlite) package.
 
 ### Modify Configuration Code
@@ -175,6 +177,7 @@ export default defineConfig({
   dbCredentials: { url: process.env.DATABASE_URL },
 });
 ```
+
 <a style="color: gray;" href="/drizzle.config.ts">/drizzle.config.ts</a>
 
 ### Modify Main Code
@@ -203,6 +206,7 @@ export const databaseInit = async () => {
   }
 };
 ```
+
 <a style="color: gray;" href="/src/database/index.ts">/src/database/index.ts</a>
 
 ### Modify Schema Code
@@ -219,6 +223,7 @@ export const databaseInit = async () => {
 +   created: text('created').$type<Date>().$defaultFn(() => new Date()),
 });
 ```
+
 <a style="color: gray;" href="/src/database/schema/example.ts">/src/database/schema/example.ts</a>
 
 > [!NOTE]
