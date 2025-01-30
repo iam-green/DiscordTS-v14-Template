@@ -25,7 +25,7 @@
    - `.env.example` → `.env`: Discord Bot 토큰과 같은 환경변수 값을 저장하는데 사용합니다.
 4. `.env`의 모든 필수 값을 입력합니다.
 5. 필요한 모든 종속성 설치하세요: `npm install`
-6. TypeScript 프로젝트를 빌드하세요: `npm build`
+6. TypeScript 프로젝트를 빌드하세요: `npm run build`
 7. `npm run start` 명령어를 사용하여 봇을 실행하세요.
 
 ## 기능

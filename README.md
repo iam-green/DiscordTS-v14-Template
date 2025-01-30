@@ -25,7 +25,7 @@
    - `.env.example` → `.env`: Used for secrets, like the Discord Bot Token.
 4. Fill all the required values in `.env`.
 5. Install all required dependencies: `npm install`
-6. Build a TypeScript project: `npm build`
+6. Build a TypeScript project: `npm run build`
 7. Run the command `npm run start` to start the bot.
 
 ## Features
