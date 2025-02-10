@@ -1,4 +1,4 @@
-<h1 align="center">DiscordJS v14 Template</h1>
+<h1 align="center">DiscordTS v14 Template</h1>
 <p align="center">
   DiscordJS template for easy use of many commands, events, components and more<br>
   <a href="/README.md">English</a>
@@ -19,7 +19,7 @@
 
 ## Installation
 
-1. [Download](https://github.com/iam-green/DiscordJS-v14-Template/archive/refs/heads/v3.zip) and decompress or clone this project.
+1. [Download](https://github.com/iam-green/DiscordTS-v14-Template/archive/refs/heads/v3.zip) and decompress or clone this project.
 2. Rename your project in the `package.json` file.
 3. Rename the following files:
    - `.env.example` → `.env`: Used for secrets, like the Discord Bot Token.

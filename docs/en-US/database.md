@@ -1,4 +1,4 @@
-<h1 align="center">DiscordJS v14 Template Database</h1>
+<h1 align="center">DiscordTS v14 Template Database</h1>
 <p align="center">
   <a href="/docs/en-US/database.md">English</a>
   &nbsp;|&nbsp;

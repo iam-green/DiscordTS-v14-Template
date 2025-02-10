@@ -1,4 +1,4 @@
-<h1 align="center">DiscordJS v14 Template</h1>
+<h1 align="center">DiscordTS v14 Template</h1>
 <p align="center">
   많은 명령어, 이벤트, 컴포넌트 등을 만들기 쉽게 하는 DiscordJS 템플릿<br>
   <a href="/README.md">English</a>
@@ -19,7 +19,7 @@
 
 ## 설치 과정
 
-1. 프로젝트를 [다운로드](https://github.com/iam-green/DiscordJS-v14-Template/archive/refs/heads/v3.zip) 및 압축해제를 하거나 복제하세요.
+1. 프로젝트를 [다운로드](https://github.com/iam-green/DiscordTS-v14-Template/archive/refs/heads/v3.zip) 및 압축해제를 하거나 복제하세요.
 2. `package.json` 파일에 있는 프로젝트 이름을 바꾸세요.
 3. 아래 파일들의 이름을 변경하세요:
    - `.env.example` → `.env`: Discord Bot 토큰과 같은 환경변수 값을 저장하는데 사용합니다.
