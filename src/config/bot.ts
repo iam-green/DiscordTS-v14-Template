@@ -1,14 +1,14 @@
 import {
   ClientOptions,
   GatewayIntentBits,
-  LocaleString,
+  Locale,
   Options,
 } from 'discord.js';
 
 export const BotConfig = {
   NAME: 'Template',
   COMMAND_PREFIX: ['/', '?', '!', '?!'],
-  DEFAULT_LANGUAGE: 'en-US' as LocaleString,
+  DEFAULT_LANGUAGE: 'en-US' as Locale,
   CLIENT_OPTION: {
     intents: [
       GatewayIntentBits.MessageContent,

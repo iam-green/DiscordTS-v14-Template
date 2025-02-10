@@ -1,7 +1,6 @@
 import {
   ApplicationCommandType,
   Locale,
-  LocaleString,
   SharedNameAndDescription,
   SlashCommandStringOption,
 } from 'discord.js';
@@ -12,8 +11,8 @@ import { CommandType } from './application_command';
 export type LanguageData = typeof import('../language/en-US.json');
 
 export class Language {
-  private static locale: LocaleString[] = [];
-  private static data: Map<Partial<LocaleString>, LanguageData> = new Map();
+  private static locale: Locale[] = [];
+  private static data: Map<Partial<Locale>, LanguageData> = new Map();
 
   static locales(includeDefault: boolean = true) {
     if (this.locale.length < 1)
@@ -21,7 +20,7 @@ export class Language {
         .sync(`${__dirname.replace(/\\/g, '/')}/../language/*.json`)
         .map(
           (v) => v.replace(/\\/g, '/').split('language/')[1].split('.json')[0],
-        ) as LocaleString[];
+        ) as Locale[];
     return includeDefault
       ? this.locale
       : this.locale.filter((v) => v != BotConfig.DEFAULT_LANGUAGE);
@@ -38,7 +37,7 @@ export class Language {
   }
 
   static get(
-    locale: LocaleString,
+    locale: Locale,
     data: keyof LanguageData,
     ...formats: any[]
   ) {

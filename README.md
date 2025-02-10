@@ -66,7 +66,7 @@ new ExtendedTextCommand({
   run: (options: {
     client: ExtendedClient,
     message: Message,
-    locale: LocaleString,
+    locale: Locale,
   }) => void
 });
 ```

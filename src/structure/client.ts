@@ -10,7 +10,7 @@ import {
   Events,
   Interaction,
   InteractionReplyOptions,
-  LocaleString,
+  Locale,
   Message,
   PermissionFlagsBits,
   PermissionResolvable,
@@ -33,7 +33,7 @@ export class ExtendedClient extends Client {
   private prefix = `${chalk.cyan('[')}Cluster ${chalk.green(
     `#${this.cluster.id}`,
   )}${chalk.cyan(']')}`;
-  locale: Map<string, LocaleString> = new Map();
+  locale: Map<string, Locale> = new Map();
 
   constructor(option: ClientOptions) {
     super(option);

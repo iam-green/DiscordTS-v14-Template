@@ -1,4 +1,4 @@
-import { LocaleString, Message, PermissionResolvable } from 'discord.js';
+import { Locale, Message, PermissionResolvable } from 'discord.js';
 import { ExtendedClient } from './client';
 import { glob } from 'glob';
 import chalk from 'chalk';
@@ -21,7 +21,7 @@ export type TextCommandType<InGuild extends boolean> = {
   run: (options: {
     client: ExtendedClient;
     message: Message<InGuild>;
-    locale: LocaleString;
+    locale: Locale;
   }) => void;
 };
 
