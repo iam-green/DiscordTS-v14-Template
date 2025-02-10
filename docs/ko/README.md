@@ -6,6 +6,10 @@
   <a href="/docs/ko/README.md">한국어</a>
 </p>
 
+> [!NOTE]
+> 혹시 JavaScript 버전 템플릿을 원하시나요?<br>
+> [이곳](https://github.com/iam-green/DiscordJS-v14-Template)에 JavaScript 버전 템플릿이 있습니다!
+
 ## 목차
 
 - [설치 과정](#설치-과정)
