@@ -21,6 +21,7 @@
 - [서비스](#서비스)
 - [로컬 저장 방법](#로컬-저장-방법)
   - [패키지 변경](#패키지-변경)
+  - [마이그레이션 폴더 제거](#마이그레이션-폴더-제거)
   - [설정 코드 수정](#설정-코드-수정)
   - [메인 코드 수정](#메인-코드-수정)
   - [스키마 코드 수정](#스키마-코드-수정)
@@ -159,13 +160,15 @@ npm install -D @types/better-sqlite3
 ```
 이 명령어를 사용하여 [SQLite](https://orm.drizzle.team/docs/get-started-sqlite) 패키지를 설치하면 됩니다.
 
+### 마이그레이션 폴더 제거
+
+새로운 스키마를 적용하기 위해 전에 사용하던 `./src/database/migration` 폴더를 지워주세요.
+
 ### 설정 코드 수정
 
 ```diff
 import 'dotenv/config';
 import { defineConfig } from 'drizzle-kit';
-
-if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is missing');
 
 export default defineConfig({
 -   dialect: 'postgresql',
@@ -209,7 +212,7 @@ export const databaseInit = async () => {
 
 ```diff
 - import { pgTable, uuid, timestamp } from 'drizzle-orm/pg-core';
-+ import { sqliteTable, text } from "drizzle-orm/sqlite-core";
++ import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 - export const example = pgTable('example', {
 -   id: uuid('id').primaryKey().defaultRandom(),

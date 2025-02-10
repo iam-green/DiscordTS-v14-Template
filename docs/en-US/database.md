@@ -21,6 +21,7 @@ This template uses the [PostgreSQL](https://orm.drizzle.team/docs/get-started-po
 - [Services](#Services)
 - [Local Save Method](#Local-Save-Method)
   - [Change Package](#Change-Package)
+  - [Remove Migration Folder](#Remove-Migration-Folder)
   - [Modify Configuration Code](#Modify-Configuration-Code)
   - [Modify Main Code](#Modify-Main-Code)
   - [Modify Schema Code](#Modify-Schema-Code)
@@ -161,6 +162,10 @@ npm install -D @types/better-sqlite3
 
 You can use this command to install the [SQLite](https://orm.drizzle.team/docs/get-started-sqlite) package.
 
+### Remove Migration Folder
+
+To apply the new schema, clear the folder `./src/database/migration` that you were using before.
+
 ### Modify Configuration Code
 
 ```diff
@@ -192,8 +197,6 @@ import { Log } from '../module';
 + import Database from 'better-sqlite3';
 import * as schema from './schema';
 
-if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is missing');
-
 - const client = new Client(process.env.DATABASE_URL);
 + const client = new Database(process.env.DATABASE_URL);
 export const db = drizzle(client, { schema });
@@ -213,7 +216,7 @@ export const databaseInit = async () => {
 
 ```diff
 - import { pgTable, uuid, timestamp } from 'drizzle-orm/pg-core';
-+ import { sqliteTable, text } from "drizzle-orm/sqlite-core";
++ import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 - export const example = pgTable('example', {
 -   id: uuid('id').primaryKey().defaultRandom(),
