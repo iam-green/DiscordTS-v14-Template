@@ -23,7 +23,7 @@
     "axios": "^1.7.9",
     "chalk": "^4",
     "discord-hybrid-sharding": "^2.2.4",
-    "discord.js": "^14.17.3",
+    "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.2",
     "glob": "^11.0.1",
