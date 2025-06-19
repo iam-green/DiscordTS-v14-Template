@@ -6,6 +6,9 @@
   <a href="/docs/ko/README.md">한국어</a>
 </p>
 
+> ⚠️ **이 레포지토리는 더 이상 유지되지 않으며, deprecated 되었습니다.**
+> 유지보수나 업데이트가 필요하다면 [대체 레포지토리](https://github.com/iam-green/discordjs-template)를 참고해 주세요.
+
 > [!NOTE]
 > 혹시 JavaScript 버전 템플릿을 원하시나요?<br>
 > [이곳](https://github.com/iam-green/DiscordJS-v14-Template)에 JavaScript 버전 템플릿이 있습니다!
